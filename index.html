@@ -1,0 +1,991 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<title>Energy Study Lab</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23FFD43B'/%3E%3Cpath d='M18 4 7 18h7l-2 10 11-14h-7z' fill='%2312203F'/%3E%3C/svg%3E">
+<style>
+:root{
+  color-scheme: light dark;
+  --bg:#E8F1FB; --grid:#D3E3F5; --paper:#FFFFFF; --ink:#12203F; --muted:#485A7C;
+  --line:#12203F; --shadow:#12203F; --volt:#FFD43B; --on-volt:#12203F;
+  --good:#146C43; --good-bg:#DAF5E5; --bad:#A8231B; --bad-bg:#FCE4E1;
+  --info:#2441C9; --info-bg:#E4EAFF; --focus:#2441C9;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#0C1630; --grid:#14234A; --paper:#162550; --ink:#EDF2FF; --muted:#A9B8DA;
+    --line:#5C73AE; --shadow:#050B1C;
+    --good:#79E3AB; --good-bg:#12392B; --bad:#FFA197; --bad-bg:#452020;
+    --info:#A9BDFF; --info-bg:#1E2F66; --focus:#FFD43B;
+  }
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0; min-height:100vh; color:var(--ink); background-color:var(--bg);
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:32px 32px;
+  font-family:ui-rounded,"SF Pro Rounded","Nunito","Avenir Next Rounded","Avenir Next",system-ui,-apple-system,"Segoe UI",sans-serif;
+  font-size:18px; line-height:1.45; -webkit-tap-highlight-color:transparent;
+}
+#app{max-width:760px; margin:0 auto; padding:18px 16px 56px; outline:none}
+h1,h2,h3,p,ul,ol{margin:0}
+h1{font-size:clamp(36px,9vw,56px); line-height:1.02; letter-spacing:-0.02em; font-weight:900}
+h2{font-size:clamp(24px,5.5vw,32px); line-height:1.15; font-weight:900; letter-spacing:-0.01em}
+.sub{color:var(--muted); margin-top:10px; max-width:34em}
+.mt{margin-top:18px}
+.stack{display:grid; gap:14px}
+.foot{margin-top:22px; color:var(--muted); font-size:15px}
+
+/* ---------- cards and buttons ---------- */
+.card{background:var(--paper); border:3px solid var(--line); border-radius:18px; box-shadow:5px 5px 0 var(--shadow); padding:20px}
+.btn{
+  font:inherit; font-weight:800; color:var(--ink); background:var(--paper);
+  border:3px solid var(--line); border-radius:14px; box-shadow:3px 3px 0 var(--shadow);
+  min-height:56px; padding:12px 20px; cursor:pointer; touch-action:manipulation;
+  -webkit-appearance:none; appearance:none;
+}
+.btn:active:not(:disabled){transform:translate(2px,2px); box-shadow:1px 1px 0 var(--shadow)}
+.btn:disabled{opacity:.5; cursor:not-allowed; box-shadow:none}
+.btn.primary{background:var(--volt); color:var(--on-volt); border-color:#12203F}
+.btn.big{display:block; width:100%; text-align:left; padding:14px 18px}
+.btn.small{min-height:44px; padding:8px 14px; font-size:16px; box-shadow:2px 2px 0 var(--shadow)}
+.btn.ghost{background:transparent; box-shadow:none}
+.btn .t{display:block; font-size:20px}
+.btn .d{display:block; font-weight:600; font-size:15px; opacity:.85; margin-top:2px}
+button:focus-visible,textarea:focus-visible{outline:4px solid var(--focus); outline-offset:3px}
+
+/* ---------- battery and meters ---------- */
+.hero .charge{margin-top:22px}
+.battery{position:relative; display:flex; gap:6px; padding:8px; margin-right:16px; border:3px solid var(--line); border-radius:12px}
+.battery::after{content:""; position:absolute; right:-17px; top:50%; width:11px; height:24px; transform:translateY(-50%); background:var(--line); border-radius:0 5px 5px 0}
+.cell{flex:1; height:36px; border:2px solid var(--line); border-radius:6px; display:block}
+.cell.part{background:var(--c); opacity:.4; border-color:var(--c)}
+.cell.on{background:var(--c); border-color:var(--c)}
+.chargetxt{margin-top:10px; font-weight:700}
+.meter{display:inline-flex; gap:3px; vertical-align:middle}
+.meter i{display:block; width:18px; height:10px; border:2px solid var(--line); border-radius:3px}
+.meter i.on{background:var(--c); border-color:var(--c)}
+
+/* ---------- quiz screen ---------- */
+.bar{display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; margin-bottom:16px}
+.barmid{font-weight:800; display:flex; align-items:center; gap:10px; flex-wrap:wrap}
+.timer{font-variant-numeric:tabular-nums; font-size:22px; background:var(--volt); color:var(--on-volt); border:3px solid #12203F; border-radius:10px; padding:2px 10px}
+.pts,.streak{font-weight:800}
+.chip{display:inline-flex; align-items:center; gap:10px; border:3px solid var(--line); border-radius:999px; padding:4px 14px 4px 10px; font-weight:800; font-size:16px; background:var(--paper)}
+.dot{width:14px; height:14px; border-radius:50%; background:var(--c)}
+.qtext{font-size:clamp(21px,4.6vw,26px); line-height:1.3; font-weight:800; margin:16px 0 14px}
+.pick{color:var(--muted); font-weight:700; font-size:16px; margin:0 0 10px}
+.fig{margin:6px 0 16px; background:var(--paper); border:3px solid var(--line); border-radius:14px; padding:8px}
+.fig svg{display:block; width:100%; height:auto; max-width:520px; margin:0 auto}
+.cap{font-size:15px; color:var(--muted); margin:6px 8px 2px}
+.fs{stroke:var(--ink); fill:none; stroke-width:2}
+.fs.thick{stroke-width:4; stroke-linecap:round}
+.fs.dash{stroke-dasharray:7 6; opacity:.6}
+.fs.dot{stroke-dasharray:2 5; opacity:.7}
+.bobt{fill:#fff; font:800 16px ui-rounded,system-ui,sans-serif}
+.balt{fill:#12203F; font:800 15px ui-rounded,system-ui,sans-serif}
+.bl{fill:var(--ink); font:700 13px ui-rounded,system-ui,sans-serif}
+.bn{fill:var(--ink); font:800 14px ui-rounded,system-ui,sans-serif}
+.bt{fill:var(--ink); font:800 15px ui-rounded,system-ui,sans-serif}
+
+.opts{display:grid; gap:12px}
+.opt{
+  font:inherit; font-weight:700; color:var(--ink); text-align:left; width:100%;
+  display:flex; gap:14px; align-items:flex-start; background:var(--paper);
+  border:3px solid var(--line); border-radius:14px; padding:12px 14px; min-height:60px;
+  cursor:pointer; box-shadow:3px 3px 0 var(--shadow); touch-action:manipulation;
+  -webkit-appearance:none; appearance:none;
+}
+.opt:active:not(:disabled){transform:translate(2px,2px); box-shadow:1px 1px 0 var(--shadow)}
+.opt .badge{flex:0 0 38px; height:38px; border-radius:10px; border:3px solid var(--line); display:grid; place-items:center; font-weight:900; background:var(--bg)}
+.opt .txt{flex:1; padding-top:4px}
+.opt .tag{display:block; font-size:14px; font-weight:800; margin-top:4px}
+.opt.sel{background:var(--info-bg); border-color:var(--info)}
+.opt.sel .badge{background:var(--info); color:var(--paper); border-color:var(--info)}
+.opt.right{background:var(--good-bg); border-color:var(--good)}
+.opt.right .tag{color:var(--good)}
+.opt.wrong{background:var(--bad-bg); border-color:var(--bad)}
+.opt.wrong .tag{color:var(--bad)}
+.opt.show,.opt.missed{border-style:dashed; border-color:var(--good)}
+.opt.show .tag,.opt.missed .tag{color:var(--good)}
+.opt:disabled{cursor:default; color:var(--ink); box-shadow:none}
+.actions{display:flex; gap:12px; flex-wrap:wrap; margin-top:16px}
+.hint{border:3px dashed var(--info); background:var(--info-bg); border-radius:14px; padding:12px 14px; margin-top:14px; font-weight:600}
+.fb{border:3px solid var(--line); border-radius:14px; padding:14px 16px; margin-top:18px; background:var(--paper)}
+.fb.good{border-color:var(--good); background:var(--good-bg)}
+.fb.bad{border-color:var(--bad); background:var(--bad-bg)}
+.fb h3{font-size:22px; margin-bottom:6px}
+.fb p{margin:6px 0}
+.next{margin-top:16px}
+
+/* ---------- lists, progress, save ---------- */
+.skill{display:grid; gap:10px}
+.skill .top{display:flex; justify-content:space-between; gap:12px; align-items:flex-start; flex-wrap:wrap}
+.skill h3{font-size:20px; display:flex; align-items:center; gap:10px}
+.skill .lvl{font-weight:800}
+.skill .meta{color:var(--muted); font-size:15px}
+.results{list-style:none; padding:0; display:grid; gap:10px}
+.results li{display:flex; align-items:center; gap:12px; font-weight:700}
+.mark{flex:0 0 34px; height:34px; border-radius:10px; border:3px solid var(--line); display:grid; place-items:center; font-weight:900}
+.mark.good{background:var(--good-bg); border-color:var(--good); color:var(--good)}
+.mark.bad{background:var(--bad-bg); border-color:var(--bad); color:var(--bad)}
+.msg{border:3px solid var(--line); border-radius:12px; padding:10px 14px; font-weight:700; margin-top:14px}
+.msg.good{border-color:var(--good); background:var(--good-bg)}
+.msg.bad{border-color:var(--bad); background:var(--bad-bg)}
+.code{
+  width:100%; display:block; font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-size:16px; line-height:1.5;
+  letter-spacing:.04em; word-break:break-all; color:var(--ink); background:var(--bg);
+  border:3px solid var(--line); border-radius:12px; padding:12px; resize:none;
+}
+.steps{padding-left:22px; display:grid; gap:6px; margin:12px 0 16px}
+.score{font-size:clamp(52px,14vw,84px); line-height:1; font-weight:900; letter-spacing:-0.02em}
+.statrow{display:flex; gap:22px; flex-wrap:wrap; margin-top:12px; font-weight:700}
+.sr{position:absolute; left:-9999px}
+
+@media (prefers-reduced-motion: reduce){
+  .btn,.opt{transition:none}
+}
+</style>
+</head>
+<body>
+<main id="app" tabindex="-1"></main>
+<noscript><p style="padding:24px">This study site needs JavaScript turned on.</p></noscript>
+<script>
+/* Question bank. IMPORTANT: save codes depend on question ORDER.
+   Add new questions at the END of the list. Never reorder or delete.
+   Fields: id, s=skill, q=question, o=options, a=answer index (or array for t:'multi'),
+   h=hint, w=why, x={optionIndex:feedback}, d=1 for quick-check question, f=figure. */
+const BANK = [
+
+/* ===== Kinetic energy ===== */
+{id:'ke1',s:'ke',q:'A runner is sprinting down the track. Which kind of energy does she have because she is moving?',
+ o:['Kinetic energy','Gravitational potential energy','Chemical potential energy','Elastic potential energy'],a:0,
+ h:'Energy of motion has its own name.',
+ w:'Kinetic energy is the energy of motion. Anything that is moving has it.',
+ x:{1:'Gravitational potential energy depends on height, not on motion.',2:'Her food does store chemical energy, but the energy of her motion is kinetic.',3:'Elastic energy is stored when something is stretched or squished.'}},
+
+{id:'ke2',s:'ke',d:1,q:'Which object has the MOST kinetic energy?',
+ o:['A 5 kg bowling ball rolling slowly (1 m/s)','A 5 kg bowling ball rolling fast (4 m/s)','A 1 kg tennis ball rolling fast (4 m/s)','A 1 kg tennis ball rolling slowly (1 m/s)'],a:1,
+ h:'Kinetic energy depends on two things. Compare both of them.',
+ w:'The bowling ball has more mass than the tennis ball, and 4 m/s is faster than 1 m/s. More mass and more speed means the most kinetic energy.',
+ x:{0:'Same mass as the best answer, but it is moving slower.',2:'Same speed as the best answer, but much less mass.',3:'This one has the least mass and the least speed, so it has the least kinetic energy.'}},
+
+{id:'ke3',s:'ke',q:'What two things does an object’s kinetic energy depend on?',
+ o:['Mass and speed','Mass and height','Speed and temperature','Height and shape'],a:0,
+ h:'Think about why a fast truck is more dangerous than a slow bicycle.',
+ w:'Kinetic energy depends on mass and speed. Increase either one and the kinetic energy goes up.',
+ x:{1:'Mass and height are the two things that change gravitational potential energy.'}},
+
+{id:'ke4',s:'ke',q:'A truck and a small car are driving at the same speed. Which has more kinetic energy, and why?',
+ o:['The truck, because it has more mass','The car, because it is smaller and quicker','They have the same kinetic energy because the speed is the same','Neither, because kinetic energy only depends on height'],a:0,
+ h:'The speeds are equal. What is different?',
+ w:'With the same speed, the object with more mass has more kinetic energy.',
+ x:{1:'The problem says they are going the same speed.',2:'Speed is only one of the two things. Mass matters too.',3:'Height changes potential energy, not kinetic energy.'}},
+
+{id:'ke5',s:'ke',q:'A ball is thrown straight up. For an instant at the very top, it stops moving. What is true about its kinetic energy at that instant?',
+ o:['It is zero','It is at its maximum','It is the same as at the moment it left your hand','It turns into mass'],a:0,
+ h:'Kinetic energy needs motion.',
+ w:'No motion means no kinetic energy. At the very top, all of the ball’s energy is potential energy for that instant.',
+ x:{1:'Kinetic energy is greatest when speed is greatest, which is right after the ball leaves your hand.',2:'At the moment it left your hand the ball was moving fast. At the top it is not moving.',3:'Energy does not turn into mass here.'}},
+
+{id:'ke6',s:'ke',t:'multi',q:'Which of these have kinetic energy right now?',
+ o:['A raindrop falling from a cloud','A book resting on a desk','A fan blade spinning','A parked car'],a:[0,2],
+ h:'Kinetic means moving.',
+ w:'The falling raindrop and the spinning fan blade are moving, so they have kinetic energy. The book and the parked car are not moving.',
+ x:{1:'The book is sitting still.',3:'The car is parked, so it is not moving.'}},
+
+/* ===== Potential energy ===== */
+{id:'pe1',s:'pe',q:'Which type of potential energy is stored in a stretched rubber band?',
+ o:['Elastic potential energy','Gravitational potential energy','Chemical potential energy','Kinetic energy'],a:0,
+ h:'Think stretch and squish.',
+ w:'Stretching or squishing something stores elastic potential energy, like a rubber band, a spring, or a bow.',
+ x:{1:'Gravitational potential energy is about height above the ground.',2:'Chemical potential energy is stored in food, fuel, and batteries.',3:'Kinetic energy is the energy of motion. The band is just stretched.'}},
+
+{id:'pe2',s:'pe',q:'A battery is sitting on a table, not in any device yet. What kind of energy is stored in it?',
+ o:['Chemical potential energy','Elastic potential energy','Gravitational potential energy','Radiant energy'],a:0,
+ h:'Batteries, food, and wood all store this type.',
+ w:'Batteries, food, and fuels store chemical potential energy.',
+ x:{3:'Radiant energy would be light. The battery has not made any yet.',2:'The battery’s energy is not stored because of its height.'}},
+
+{id:'pe3',s:'pe',q:'Which object has the MOST gravitational potential energy?',
+ o:['A 1 kg book, 5 m high','A 4 kg box, 2 m high','A 2 kg box, 3 m high','A 4 kg box, 3 m high'],a:3,
+ h:'Gravitational potential energy goes up with both mass and height.',
+ w:'The 4 kg box at 3 m has a lot of mass and is also high up. It beats the other 4 kg box because it is higher.',
+ x:{0:'It is the highest, but it has very little mass.',1:'Same mass as the best answer, but not as high.',2:'Less mass and less height than the best answer.'}},
+
+{id:'pe4',s:'pe',d:1,q:'What two things change an object’s gravitational potential energy?',
+ o:['Mass and height','Speed and height','Mass and speed','Shape and temperature'],a:0,
+ h:'Think about the shelves Gizmo. What did you change?',
+ w:'Heavier objects and higher objects have more gravitational potential energy.',
+ x:{1:'Speed is part of kinetic energy.',2:'That pair describes kinetic energy.'}},
+
+{id:'pe5',s:'pe',q:'Two divers have the same mass. One stands on a 10 m platform and the other on a 3 m platform. Which statement is true?',
+ o:['The 10 m diver has more gravitational potential energy','The 3 m diver has more gravitational potential energy','They have the same gravitational potential energy','Both have zero potential energy until they jump'],a:0,
+ h:'Same mass. What is different?',
+ w:'With the same mass, the higher diver has more gravitational potential energy. Standing still up high already counts as stored energy.',
+ x:{3:'Standing high up already stores energy. The jump just changes it into kinetic energy.'}},
+
+{id:'pe6',s:'pe',t:'multi',q:'Which of these store CHEMICAL potential energy?',
+ o:['An apple','A charged battery','A compressed spring','A log of firewood','A boulder on a cliff'],a:[0,1,3],
+ h:'Food, fuel, and batteries.',
+ w:'Food, batteries, and fuel store chemical potential energy. The spring is elastic and the boulder is gravitational.',
+ x:{2:'A compressed spring stores elastic potential energy.',4:'A boulder up high stores gravitational potential energy.'}},
+
+{id:'pe7',s:'pe',q:'A bowling ball sits on a shelf. You slide it sideways along the shelf, keeping it at the same height. What happens to its gravitational potential energy?',
+ o:['It stays the same','It increases','It decreases','It changes into kinetic energy'],a:0,
+ h:'Does the height change?',
+ w:'Gravitational potential energy depends on height, not on side-to-side position.',
+ x:{1:'Only moving it higher would increase it.',3:'The ball is not falling, so there is no change to kinetic energy.'}},
+
+/* ===== Pendulums and bouncing ===== */
+{id:'swing1',s:'swing',d:1,f:'pend',q:'A pendulum swings back and forth between V and Z. At which point is it moving the fastest?',
+ o:['V','W','X','Y','Z'],a:2,
+ h:'Where is the pendulum lowest?',
+ w:'At the bottom of the swing, the potential energy has turned into kinetic energy, so the pendulum is moving fastest.',
+ x:{0:'At V the pendulum stops for an instant before swinging back.',4:'At Z the pendulum stops for an instant before swinging back.',1:'It is still speeding up at W.',3:'It is already slowing down at Y.'}},
+
+{id:'swing2',s:'swing',t:'multi',f:'pend',q:'Where does the pendulum have the MOST gravitational potential energy?',
+ o:['V','W','X','Y','Z'],a:[0,4],
+ h:'Potential energy is biggest where the pendulum is highest. There can be more than one spot.',
+ w:'Both ends of the swing are the highest points, so potential energy is greatest at V and at Z.',
+ x:{2:'X is the lowest point, so potential energy is smallest there.',1:'W is partway up, but not the highest.',3:'Y is partway up, but not the highest.'}},
+
+{id:'swing3',s:'swing',f:'pend',q:'At point Z the pendulum stops for an instant before swinging back. What is true about its energy at Z?',
+ o:['All potential energy, no kinetic energy','All kinetic energy, no potential energy','Half potential and half kinetic','It has no energy at all'],a:0,
+ h:'If it is stopped, how much kinetic energy does it have?',
+ w:'Stopped means zero kinetic energy. At the highest point all of the mechanical energy is potential energy.',
+ x:{1:'That describes the bottom of the swing, where it is moving fastest.',3:'It still has potential energy because it is high up.'}},
+
+{id:'swing4',s:'swing',f:'pend',q:'The pendulum swings from Z down to X. Which energy change happens?',
+ o:['Potential energy changes to kinetic energy','Kinetic energy changes to potential energy','Thermal energy changes to sound energy','Nothing changes'],a:0,
+ h:'It is getting lower and faster.',
+ w:'As the pendulum falls, it loses height (less potential energy) and gains speed (more kinetic energy).',
+ x:{1:'That happens when it swings up from X toward the far side.',3:'The total stays the same, but the forms are changing.'}},
+
+{id:'swing5',s:'swing',q:'Another pendulum is released from a HIGHER starting point than the first one. How does its speed at the bottom of the swing compare?',
+ o:['It is faster','It is slower','It is the same','It is zero'],a:0,
+ h:'Higher up means more stored energy.',
+ w:'A higher start means more potential energy. That all becomes kinetic energy at the bottom, so it moves faster.',
+ x:{2:'The same height would give the same speed. This one starts higher.'}},
+
+{id:'swing6',s:'swing',f:'bounce',q:'A ball is dropped from point 1 and bounces. Which of these points has the MOST kinetic energy?',
+ o:['Point 1','Point 2','Point 3','Point 4'],a:2,
+ h:'Look for the point where it has fallen the farthest without having bounced yet.',
+ w:'Point 3 is just before the ball hits the ground. It has fallen the whole way, so almost all of its energy is kinetic.',
+ x:{0:'At point 1 the ball has not started moving yet.',1:'It is still speeding up at point 2.',3:'Point 4 is the top of a bounce, where it is almost stopped.'}},
+
+{id:'swing7',s:'swing',f:'bounce',q:'Look at the same bouncing ball. At which of these points is it moving the SLOWEST?',
+ o:['Point 2','Point 3','Point 4','Point 5'],a:2,
+ h:'Where does the ball stop for an instant?',
+ w:'At the top of a bounce, the ball stops for an instant before falling again. That is the slowest it moves.',
+ x:{0:'The ball is falling and speeding up at point 2.',1:'Point 3 is the fastest point shown.',3:'The ball is already falling and speeding up at point 5.'}},
+
+{id:'swing8',s:'swing',q:'A skater starts at rest at the top of a half-pipe and rolls down to the bottom. Compared with the top, at the bottom she has...',
+ o:['Less potential energy and more kinetic energy','More potential energy and more kinetic energy','Less potential energy and less kinetic energy','More potential energy and less kinetic energy'],a:0,
+ h:'She is lower and moving faster.',
+ w:'Lower means less potential energy. Faster means more kinetic energy. Potential energy turned into kinetic energy.',
+ x:{1:'The total stays the same, so one cannot go up unless the other goes down.',2:'Both cannot go down. The energy changes form, it does not disappear.',3:'That describes going back up the ramp, not rolling down.'}},
+
+/* ===== Mechanical energy ===== */
+{id:'mech1',s:'mech',q:'What is mechanical energy?',
+ o:['The kinetic energy plus the potential energy of an object','Only the energy of moving objects','The energy stored in food and fuel','The heat energy in an object'],a:0,
+ h:'It is a combination of two things.',
+ w:'Mechanical energy is the total of an object’s kinetic energy and potential energy.',
+ x:{1:'That is only kinetic energy.',2:'That is chemical potential energy.',3:'That is thermal energy.'}},
+
+{id:'mech2',s:'mech',f:'bars',q:'These bar graphs show one ball at three different moments. At which moment is the ball highest above the ground?',
+ o:['Moment 1','Moment 2','Moment 3'],a:1,
+ h:'Gravitational potential energy goes up with height. Find the biggest PE bar.',
+ w:'Moment 2 has the tallest PE bar, so the ball is highest then. Notice the Total bar is the same in every graph.',
+ x:{0:'Moment 1 has a small PE bar, so the ball is low.',2:'At Moment 3 the ball is about halfway up.'}},
+
+{id:'mech3',s:'mech',f:'bars',q:'Look at the same three moments. At which moment is the ball moving the fastest?',
+ o:['Moment 1','Moment 2','Moment 3'],a:0,
+ h:'Find the biggest KE bar.',
+ w:'Moment 1 has the tallest KE bar, so the ball is moving fastest then.',
+ x:{1:'Moment 2 has the smallest KE bar. The ball is nearly stopped.',2:'Moment 3 is in the middle. The ball is moving, but not the fastest.'}},
+
+{id:'mech4',s:'mech',f:'barsNum',q:'Ignore friction. What is the total mechanical energy of the ball at Moment 3?',
+ o:['10 units','5 units','0 units','15 units'],a:0,
+ h:'Total mechanical energy is KE plus PE.',
+ w:'5 + 5 = 10 units. Without friction, the total is the same at every moment.',
+ x:{1:'5 is only one of the two bars. Add KE and PE together.',2:'The ball is moving and is above the ground, so it has energy.',3:'Add the two bars, but do not count anything twice.'}},
+
+{id:'mech5',s:'mech',d:1,q:'A cart has 60 J of potential energy and 40 J of kinetic energy. What is its mechanical energy?',
+ o:['100 J','20 J','40 J','60 J'],a:0,
+ h:'Mechanical energy is KE plus PE.',
+ w:'60 J + 40 J = 100 J.',
+ x:{1:'That is the difference. Mechanical energy is the sum.',2:'That is only the kinetic energy.',3:'That is only the potential energy.'}},
+
+{id:'mech6',s:'mech',q:'A coaster has 900 J of potential energy at the top and no kinetic energy. Ignore friction. At a spot where its potential energy is 300 J, how much kinetic energy does it have?',
+ o:['600 J','300 J','900 J','1200 J'],a:0,
+ h:'The total mechanical energy stays the same.',
+ w:'The total stays 900 J. If 300 J is potential, the other 900 − 300 = 600 J must be kinetic.',
+ x:{1:'Only 300 J is potential. The rest of the 900 J has to be kinetic.',2:'The coaster still has 300 J of potential energy, so kinetic cannot be all 900 J.',3:'The total cannot grow. It stays at 900 J.'}},
+
+{id:'mech7',s:'mech',q:'A ball falls toward the ground. Ignore air. What happens to its energy as it falls?',
+ o:['Potential energy goes down and kinetic energy goes up','Potential energy goes up and kinetic energy goes down','Both go up','Both go down'],a:0,
+ h:'It is getting lower and faster.',
+ w:'Falling means less height (less PE) and more speed (more KE). The total stays the same.',
+ x:{1:'That describes a ball moving upward.',2:'Both cannot go up. The total stays the same.',3:'Both cannot go down. The energy does not disappear.'}},
+
+/* ===== Forms of energy ===== */
+{id:'forms1',s:'forms',d:1,q:'Which form of energy comes from electrons moving through a wire?',
+ o:['Electrical energy','Nuclear energy','Sound energy','Thermal energy'],a:0,
+ h:'It is in the name of the thing moving.',
+ w:'Electrical energy is the energy of moving electrons.',
+ x:{1:'Nuclear energy is stored inside the center of atoms.',2:'Sound is a vibration that travels through matter.',3:'Thermal energy is the motion of particles in matter.'}},
+
+{id:'forms2',s:'forms',q:'Visible light, microwaves, and X-rays are all examples of which form of energy?',
+ o:['Radiant energy','Sound energy','Chemical potential energy','Elastic potential energy'],a:0,
+ h:'Think of waves of light.',
+ w:'Radiant energy travels in waves. Light, microwaves, and X-rays are all kinds of radiant energy.',
+ x:{1:'Sound needs matter to travel through. Light and microwaves can cross empty space.'}},
+
+{id:'forms3',s:'forms',q:'Your tablet gets Wi-Fi from a router. Which form of energy carries the Wi-Fi signal?',
+ o:['Radiant energy (radio waves)','Sound energy','Nuclear energy','Gravitational potential energy'],a:0,
+ h:'Wi-Fi is invisible, but it travels as waves.',
+ w:'Wi-Fi uses radio waves. Radio waves are a type of radiant energy, just like light.',
+ x:{1:'You cannot hear Wi-Fi, and sound needs matter to travel through.'}},
+
+{id:'forms4',s:'forms',q:'Fission and fusion release energy that is stored inside atoms. What is this energy called?',
+ o:['Nuclear energy','Thermal energy','Elastic potential energy','Radiant energy'],a:0,
+ h:'It is stored in the nucleus.',
+ w:'Nuclear energy is stored in the nucleus of an atom and released by fission or fusion.',
+ x:{3:'Radiant energy can be released, but it is not what is stored inside the atom.'}},
+
+{id:'forms5',s:'forms',q:'Thermal energy always moves from...',
+ o:['hot objects to cold objects','cold objects to hot objects','big objects to small objects','fast objects to slow objects'],a:0,
+ h:'Think about an ice cube in your hand.',
+ w:'Thermal energy always flows from hot to cold. The ice cube feels cold because your hand is sending thermal energy into it.',
+ x:{1:'Cold does not flow into a hot object. Thermal energy flows out of the hot object.'}},
+
+{id:'forms6',s:'forms',q:'Why does sound travel better through water than through air?',
+ o:['Water particles are closer together, so they pass the vibration along easily','Water is colder than air','Sound is a kind of light, and light moves well through water','Water particles are bigger than air particles'],a:0,
+ h:'Sound is a vibration passed from particle to particle.',
+ w:'Sound moves as particles bump into each other. Closer particles pass the vibration along faster.',
+ x:{2:'Sound is not light. It is a vibration that needs matter to travel through.'}},
+
+{id:'forms7',s:'forms',q:'An ice cube feels cold. Does it have thermal energy?',
+ o:['Yes, its particles are still moving, just slowly','No, cold things have no thermal energy','Only after it starts melting','Only if it is touching something hot'],a:0,
+ h:'Are the particles in ice completely still?',
+ w:'All matter has thermal energy because its particles are always moving. Cold just means less of it.',
+ x:{1:'There is no such thing as “cold energy.” Cold means the particles have less thermal energy.'}},
+
+{id:'forms8',s:'forms',t:'multi',q:'Which of these are forms of energy?',
+ o:['Sound','Light (radiant)','Mass','Electrical'],a:[0,1,3],
+ h:'One of these is “stuff,” not energy.',
+ w:'Sound, light, and electrical energy are forms of energy. Mass is the “stuff” things are made of.',
+ x:{2:'Mass is stuff. Energy is what causes change in stuff.'}},
+
+/* ===== Energy transformations ===== */
+{id:'tr1',s:'transform',d:1,q:'A solar panel turns sunlight into electricity. Which energy transformation is this?',
+ o:['Radiant to electrical','Electrical to radiant','Thermal to chemical potential','Kinetic to sound'],a:0,
+ h:'Sunlight is the starting form.',
+ w:'Sunlight is radiant energy. The panel changes it into electrical energy.',
+ x:{1:'That is backwards. That is what a light bulb does.'}},
+
+{id:'tr2',s:'transform',q:'A hiker eats a granola bar and then walks up a hill. Which chain best describes the energy?',
+ o:['Chemical potential to kinetic to gravitational potential','Kinetic to chemical potential to thermal','Elastic potential to kinetic to sound','Radiant to electrical to sound'],a:0,
+ h:'Food first, then movement, then height.',
+ w:'The food stores chemical energy. Her muscles turn it into motion (kinetic). Climbing stores some as gravitational potential energy.',
+ x:{1:'The chain runs the other way around.'}},
+
+{id:'tr3',s:'transform',t:'multi',q:'A campfire burns wood. Which forms of energy does the fire give off?',
+ o:['Thermal energy (heat)','Radiant energy (light)','Elastic potential energy','Nuclear energy'],a:[0,1],
+ h:'What can you feel and see when you sit by a fire?',
+ w:'Burning turns chemical potential energy into thermal energy (heat) and radiant energy (light).',
+ x:{2:'Nothing is being stretched or squished.',3:'Nuclear energy comes from changes inside atoms. Burning is a chemical change.'}},
+
+{id:'tr4',s:'transform',q:'You press a doorbell and it rings. Which transformation happens?',
+ o:['Electrical to sound','Sound to electrical','Thermal to electrical','Chemical potential to nuclear'],a:0,
+ h:'What goes in, and what comes out?',
+ w:'The doorbell uses electrical energy and changes it into sound energy.',
+ x:{1:'That would be a microphone.'}},
+
+{id:'tr5',s:'transform',q:'You pull back a toy slingshot and let go. What energy change happens as it launches?',
+ o:['Elastic potential to kinetic','Kinetic to elastic potential','Gravitational potential to chemical potential','Thermal to radiant'],a:0,
+ h:'The stretched rubber is storing energy.',
+ w:'The stretched band stores elastic potential energy. When you let go, it changes into kinetic energy.',
+ x:{1:'That is what happens when you pull it back, not when it launches.'}},
+
+{id:'tr6',s:'transform',q:'In our burning-food lab, the food starts with chemical potential energy. Which chain shows how the water got warmer?',
+ o:['Chemical potential to thermal (the flame) to thermal energy in the water','Thermal to chemical potential to kinetic','Radiant to chemical potential to sound','Kinetic to thermal to chemical potential'],a:0,
+ h:'Food burns, the flame is hot, the water heats up.',
+ w:'Burning the food changes chemical potential energy into thermal energy in the flame. The flame passes thermal energy into the water.',
+ x:{3:'That is backwards. The food starts with chemical potential energy.'}},
+
+{id:'tr7',s:'transform',q:'Water stored behind a dam falls through a turbine and spins a generator. Which chain is correct?',
+ o:['Gravitational potential to kinetic to electrical','Electrical to kinetic to gravitational potential','Chemical potential to nuclear to sound','Thermal to elastic potential to radiant'],a:0,
+ h:'High water falls, spins something, makes electricity.',
+ w:'The high water has gravitational potential energy. Falling gives it kinetic energy, and the generator changes that into electrical energy.',
+ x:{1:'This is backwards.'}},
+
+{id:'tr8',s:'transform',q:'A light bulb glows. What is the bulb’s main energy change?',
+ o:['Electrical to radiant (and some thermal)','Radiant to electrical','Chemical potential to sound','Kinetic to nuclear'],a:0,
+ h:'Electricity goes in. What comes out that you can see?',
+ w:'A bulb changes electrical energy into radiant energy (light). It also gives off some thermal energy, which is why bulbs get warm.',
+ x:{1:'That is backwards. That is what a solar panel does.'}},
+
+/* ===== Conservation of energy ===== */
+{id:'cons1',s:'cons',d:1,q:'Which statement best describes the law of conservation of energy?',
+ o:['Energy cannot be created or destroyed, only changed from one form to another','Energy is used up when objects slow down','Energy can be created when machines run','Energy can only change forms one time'],a:0,
+ h:'Think about what always stays the same.',
+ w:'The total amount of energy stays the same. Energy can change form, but it is never created or destroyed.',
+ x:{1:'When objects slow down, their energy changes form. It is not used up.',2:'Machines change energy from one form to another. They do not make new energy.',3:'Energy can change forms as many times as you like.'}},
+
+{id:'cons2',s:'cons',q:'A dead-bounce ball hits the floor and stays there. Where did its energy go?',
+ o:['It changed into thermal and sound energy','It was destroyed when the ball stopped','It stayed inside the ball as kinetic energy','It went back into gravity'],a:0,
+ h:'Energy is never destroyed.',
+ w:'The ball’s kinetic energy changed into thermal energy and sound energy in the ball and the floor.',
+ x:{1:'Energy is never destroyed. It changes form.',2:'The ball stopped moving, so it has no kinetic energy.'}},
+
+{id:'cons3',s:'cons',q:'A bouncy ball dropped from 1.0 m only bounces back up to 0.7 m. What best explains the missing height?',
+ o:['Some mechanical energy changed to thermal and sound energy during the bounce','Some energy was destroyed','The ball gained mass','Gravity got stronger'],a:0,
+ h:'Where could the energy go besides height?',
+ w:'Each bounce changes a little kinetic energy into thermal and sound energy, so there is less left to lift the ball.',
+ x:{1:'Energy is never destroyed.',2:'The ball does not change mass.',3:'Gravity stays the same.'}},
+
+{id:'cons4',s:'cons',q:'An inventor says her machine puts out MORE energy than it takes in. Based on the law of conservation of energy, what should you think?',
+ o:['It is not possible, because energy cannot be created','It is possible if the machine is very large','It is possible if it uses electricity','It is possible, but only on the Moon'],a:0,
+ h:'Can a machine make new energy?',
+ w:'Machines can only change energy from one form to another. They cannot make more energy than they take in.',
+ x:{1:'Size does not matter. Energy is still conserved.',2:'Electricity is a form of energy. It does not make new energy.',3:'Conservation of energy works everywhere.'}},
+
+{id:'cons5',s:'cons',q:'In a closed system, what happens to the total amount of energy over time?',
+ o:['It stays the same','It slowly disappears','It keeps increasing','It doubles every second'],a:0,
+ h:'Conservation means “keeping the same.”',
+ w:'In a closed system, energy changes form but the total stays the same.',
+ x:{1:'Energy changes form, but it does not disappear.',2:'Energy cannot be created.'}},
+
+{id:'cons6',s:'cons',q:'A campfire burns the wood down to a small pile of ash. Where did the energy stored in the wood go?',
+ o:['It changed into thermal and radiant energy that spread out','It was destroyed by the fire','It went back into the ground','It stayed in the ash'],a:0,
+ h:'What does a fire give off?',
+ w:'The chemical potential energy in the wood changed into thermal energy and light, which spread into the air and surroundings.',
+ x:{1:'Energy is never destroyed.',3:'The ash is not storing that energy. It was released.'}},
+
+/* ===== Friction and thermal energy ===== */
+{id:'fric1',s:'fric',d:1,q:'You rub your hands together quickly and they get warm. Which energy change is happening?',
+ o:['Kinetic to thermal','Thermal to kinetic','Chemical potential to nuclear','Radiant to sound'],a:0,
+ h:'Your hands are moving, and then they are warm.',
+ w:'Friction changes kinetic energy (motion) into thermal energy (heat).',
+ x:{1:'That is backwards. Friction does not turn heat into motion.'}},
+
+{id:'fric2',s:'fric',q:'A sled slides across a snowy field and slowly stops. Which statement is true?',
+ o:['Friction changed the sled’s kinetic energy into thermal energy','Friction destroyed the sled’s kinetic energy','The sled ran out of mass','Friction changed the sled’s kinetic energy into gravitational potential energy'],a:0,
+ h:'Energy cannot be destroyed.',
+ w:'Friction turns kinetic energy into thermal energy. The sled and snow get a tiny bit warmer.',
+ x:{1:'Energy is never destroyed. It changed form.',2:'Mass is not what the sled runs out of.',3:'The sled did not go uphill, so its height did not change.'}},
+
+{id:'fric3',s:'fric',q:'You slide the same block across two surfaces. Which surface will make the block and surface get warmer?',
+ o:['Rough sandpaper','Smooth ice','Both the same','Neither, sliding never makes heat'],a:0,
+ h:'More friction means more heat.',
+ w:'Rougher surfaces cause more friction, so more kinetic energy changes into thermal energy.',
+ x:{3:'Sliding always makes at least a little heat from friction.'}},
+
+{id:'fric4',s:'fric',q:'The brake pads on a bike squeeze the wheel to stop it. What energy change happens?',
+ o:['Kinetic energy to thermal energy','Thermal energy to kinetic energy','Elastic potential to chemical potential','Radiant to electrical'],a:0,
+ h:'The bike slows down, and the brakes get warm.',
+ w:'Friction in the brakes changes the bike’s kinetic energy into thermal energy.',
+ x:{1:'That would speed the bike up.'}},
+
+{id:'fric5',s:'fric',t:'multi',q:'Which of these involve friction turning motion into heat?',
+ o:['Rubbing your hands together','Striking a match on the rough strip','A book sliding across a desk and stopping','A lamp turned on'],a:[0,1,2],
+ h:'Look for things rubbing or sliding.',
+ w:'Rubbing, striking, and sliding all create friction that changes kinetic energy into thermal energy.',
+ x:{3:'A lamp changes electrical energy into light and heat, but nothing is rubbing or sliding.'}},
+
+{id:'fric6',s:'fric',q:'A spacecraft returning to Earth gets extremely hot. What causes this?',
+ o:['Friction with the air changes kinetic energy into thermal energy','The spacecraft is closer to the Sun','Gravity creates thermal energy from nothing','The spacecraft burns up its mass'],a:0,
+ h:'It is moving very fast through the air.',
+ w:'The spacecraft moves so fast that friction with the air changes a huge amount of kinetic energy into thermal energy.',
+ x:{2:'Energy is never created from nothing.'}},
+
+{id:'fric7',s:'fric',q:'A toy car rolls across the floor and stops. Which statement is NOT correct?',
+ o:['Some of its kinetic energy changed to thermal energy','Its energy was destroyed','The floor and wheels got slightly warmer','The total amount of energy stayed the same'],a:1,
+ h:'Look for the statement that breaks the law of conservation of energy.',
+ w:'The energy was not destroyed. It changed from kinetic energy into thermal energy, and the total stayed the same.',
+ x:{0:'This statement is correct, so it is not the answer.',2:'This statement is correct, so it is not the answer.',3:'This statement is correct, so it is not the answer.'}}
+
+];
+/*LOGIC_START*/
+const MASTERED = 75;
+const SKILLS = [
+  {id:'ke',        name:'Kinetic energy',              blurb:'The energy of motion',                          color:'#E8772E'},
+  {id:'pe',        name:'Potential energy',            blurb:'Gravitational, elastic, and chemical',          color:'#2D6BE0'},
+  {id:'swing',     name:'Pendulums and bouncing',      blurb:'Where is kinetic or potential energy biggest?', color:'#7A5BD6'},
+  {id:'mech',      name:'Mechanical energy',           blurb:'Kinetic plus potential, and bar graphs',        color:'#0F8F83'},
+  {id:'forms',     name:'Forms of energy',             blurb:'Thermal, sound, radiant, electrical, nuclear',  color:'#D4A017'},
+  {id:'transform', name:'Energy transformations',      blurb:'How energy changes form',                       color:'#D9467A'},
+  {id:'cons',      name:'Conservation of energy',      blurb:'Energy is never destroyed',                     color:'#3C9B4F'},
+  {id:'fric',      name:'Friction and thermal energy', blurb:'Where did the motion go?',                      color:'#C94B3B'}
+];
+const SKILL = Object.fromEntries(SKILLS.map(s => [s.id, s]));
+BANK.forEach((q, i) => { q.i = i; });
+
+function freshState(){
+  return {diag:false, best:0, mastery:Object.fromEntries(SKILLS.map(s => [s.id, 0])), status:new Array(BANK.length).fill(0)};
+}
+let state = freshState();
+const sess = {asked:0, skillAt:{}, qAt:{}, lastSkill:null, lastQ:null};
+function resetSess(){ sess.asked = 0; sess.skillAt = {}; sess.qAt = {}; sess.lastSkill = null; sess.lastQ = null; }
+
+function shuffle(a){
+  const r = a.slice();
+  for (let i = r.length - 1; i > 0; i--){ const j = Math.floor(Math.random() * (i + 1)); [r[i], r[j]] = [r[j], r[i]]; }
+  return r;
+}
+function isRight(q, o){ return q.t === 'multi' ? q.a.includes(o) : o === q.a; }
+function grade(q, sel){
+  if (q.t === 'multi') return sel.length === q.a.length && q.a.every(x => sel.includes(x));
+  return sel.length === 1 && sel[0] === q.a;
+}
+function started(sid){ return BANK.some(q => q.s === sid && state.status[q.i] !== 0); }
+function levelLabel(sid){
+  const m = state.mastery[sid];
+  if (!started(sid)) return 'Not started';
+  if (m >= MASTERED) return 'Mastered';
+  if (m >= 50) return 'Getting there';
+  if (m >= 25) return 'Warming up';
+  return 'Needs work';
+}
+function weakest(){
+  let best = SKILLS[0];
+  for (const s of SKILLS){ if (state.mastery[s.id] < state.mastery[best.id]) best = s; }
+  return best;
+}
+function charged(){ return SKILLS.filter(s => state.mastery[s.id] >= MASTERED).length; }
+
+function weightedPick(items, wfn){
+  let tot = 0;
+  const ws = items.map(it => { const w = Math.max(0.01, wfn(it)); tot += w; return w; });
+  let r = Math.random() * tot;
+  for (let i = 0; i < items.length; i++){ r -= ws[i]; if (r <= 0) return items[i]; }
+  return items[items.length - 1];
+}
+
+/* Adaptive picker: weaker skills come up more often, missed questions return after a gap,
+   mastered skills still appear now and then for review. */
+function pickQuestion(focus){
+  const pool = focus ? SKILLS.filter(s => s.id === focus) : SKILLS;
+  const skill = weightedPick(pool, s => {
+    const m = state.mastery[s.id];
+    let w = m >= MASTERED ? 5 + Math.min(20, (sess.asked - (sess.skillAt[s.id] || 0)) * 1.2) : 25 + (100 - m);
+    if (!focus && s.id === sess.lastSkill) w *= 0.3;
+    return w;
+  });
+  const cands = BANK.filter(q => q.s === skill.id && q.id !== sess.lastQ);
+  return weightedPick(cands, q => {
+    const st = state.status[q.i];
+    const gap = sess.asked - (sess.qAt[q.id] === undefined ? -99 : sess.qAt[q.id]);
+    let w = st === 0 ? 5 : (st === 2 ? (gap >= 2 ? 7 : 0.4) : 1.5);
+    if (gap < 4) w *= 0.2;
+    return w;
+  });
+}
+
+function applyAnswer(q, correct, usedHint){
+  const before = state.mastery[q.s];
+  let m = before + (correct ? (usedHint ? 12 : 25) : -20);
+  m = Math.max(0, Math.min(100, m));
+  state.mastery[q.s] = m;
+  state.status[q.i] = correct ? 1 : 2;
+  sess.asked++; sess.qAt[q.id] = sess.asked; sess.skillAt[q.s] = sess.asked;
+  sess.lastSkill = q.s; sess.lastQ = q.id;
+  return {before, after:m, mastered:before < MASTERED && m >= MASTERED};
+}
+function applyDiag(q, correct){
+  state.mastery[q.s] = correct ? 50 : 10;
+  state.status[q.i] = correct ? 1 : 2;
+}
+
+/* ---------- save codes ---------- */
+const CODE_VER = 'A';
+function b36(n, len){ return Math.max(0, Math.round(n)).toString(36).toUpperCase().padStart(len, '0'); }
+function checksum(str){ let h = 7; for (const ch of str){ h = (h * 31 + ch.charCodeAt(0)) % 1296; } return b36(h, 2); }
+function encodeState(st){
+  const body = CODE_VER + (st.diag ? '1' : '0') + SKILLS.map(s => b36(st.mastery[s.id], 2)).join('') + b36(Math.min(st.best, 46655), 3) + st.status.join('');
+  const full = body + checksum(body);
+  return 'ENERGY-' + full.match(/.{1,5}/g).join('-');
+}
+function decodeState(code){
+  let c = String(code || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+  if (c.startsWith('ENERGY')) c = c.slice(6);
+  if (!c.length) return {error:'Paste your code into the box first.'};
+  if (c[0] !== CODE_VER) return {error:'This code does not match this version of the site. Check that you copied the whole code.'};
+  const need = 2 + SKILLS.length * 2 + 3 + BANK.length + 2;
+  if (c.length < need) return {error:'That code is too short. Check that you copied all of it.'};
+  if (c.length > need) return {error:'That code is too long. Check that you only pasted the code.'};
+  const body = c.slice(0, -2);
+  if (checksum(body) !== c.slice(-2)) return {error:'That code has a mistake in it. Check each character and try again.'};
+  const st = freshState();
+  st.diag = c[1] === '1';
+  let p = 2;
+  for (const s of SKILLS){
+    const m = parseInt(c.slice(p, p + 2), 36); p += 2;
+    if (!(m >= 0 && m <= 100)) return {error:'That code has a mistake in it. Check each character and try again.'};
+    st.mastery[s.id] = m;
+  }
+  st.best = parseInt(c.slice(p, p + 3), 36); p += 3;
+  for (let i = 0; i < BANK.length; i++){
+    const d = c[p + i];
+    if (d !== '0' && d !== '1' && d !== '2') return {error:'That code has a mistake in it. Check each character and try again.'};
+    st.status[i] = +d;
+  }
+  return {state:st};
+}
+/*LOGIC_END*/
+/* ===================== UI ===================== */
+const app = document.getElementById('app');
+const reduceMotion = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+const DIAG = BANK.filter(q => q.d);
+const LETTERS = 'ABCDEFGH';
+
+let screen = 'home', mode = 'practice', focus = null, cur = null;
+let diagI = 0, diagRes = [], msg = '', msgKind = 'good', loadText = '', confirmReset = false;
+let sprint = null;
+
+function fmt(ms){ const s = Math.ceil(ms / 1000); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); }
+function meter(sid){
+  const lit = Math.min(3, Math.floor(state.mastery[sid] / 25));
+  return `<span class="meter" style="--c:${SKILL[sid].color}" aria-hidden="true">${[0, 1, 2].map(i => `<i class="${i < lit ? 'on' : ''}"></i>`).join('')}</span>`;
+}
+function msgHTML(){ return msg ? `<div class="msg ${msgKind}" role="status">${esc(msg)}</div>` : ''; }
+
+/* ---------- figures ---------- */
+function figPend(){
+  const cx = 200, cy = 24, L = 170, angs = [-60, -30, 0, 30, 60], labs = ['V', 'W', 'X', 'Y', 'Z'];
+  const pts = angs.map(a => { const r = a * Math.PI / 180; return {x:cx + L * Math.sin(r), y:cy + L * Math.cos(r)}; });
+  let g = `<line class="fs thick" x1="110" y1="${cy}" x2="290" y2="${cy}"/>`;
+  g += `<path class="fs dash" d="M${pts[0].x.toFixed(1)} ${pts[0].y.toFixed(1)} A${L} ${L} 0 0 0 ${pts[4].x.toFixed(1)} ${pts[4].y.toFixed(1)}"/>`;
+  pts.forEach((p, i) => { g += `<line class="fs ${i === 2 ? '' : 'dot'}" x1="${cx}" y1="${cy}" x2="${p.x.toFixed(1)}" y2="${p.y.toFixed(1)}"/>`; });
+  pts.forEach((p, i) => { g += `<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="15" fill="#2441C9" stroke="#12203F" stroke-width="2"/><text class="bobt" x="${p.x.toFixed(1)}" y="${p.y.toFixed(1)}" dy=".35em" text-anchor="middle">${labs[i]}</text>`; });
+  return {svg:`<svg viewBox="0 0 400 226" role="img" aria-label="A pendulum hanging from a bar. Five positions are marked: V at the far left and high, W lower left, X at the very bottom, Y lower right, Z at the far right and high.">${g}</svg>`,
+          cap:'Ignore friction. The pendulum swings back and forth between V and Z.'};
+}
+function figBounce(){
+  const pts = [[40, 30], [77.5, 84.5], [118, 149], [217, 70], [261, 94.5], [352, 112]];
+  let g = `<line class="fs thick" x1="10" y1="176" x2="420" y2="176"/>`;
+  for (let x = 24; x < 420; x += 22) g += `<line class="fs" x1="${x}" y1="176" x2="${x - 10}" y2="188"/>`;
+  g += `<path class="fs dash" d="M40 30 Q70 70 130 168 Q217 -28 305 168 Q352 56 400 168"/>`;
+  pts.forEach((p, i) => { g += `<circle cx="${p[0]}" cy="${p[1]}" r="13" fill="#E8772E" stroke="#12203F" stroke-width="2"/><text class="balt" x="${p[0]}" y="${p[1]}" dy=".35em" text-anchor="middle">${i + 1}</text>`; });
+  return {svg:`<svg viewBox="0 0 430 194" role="img" aria-label="A bouncing ball path with six numbered points. Point 1 is the high starting point. Points 2 and 3 are on the way down. Point 4 is the top of the first bounce. Point 5 is on the way down again. Point 6 is the top of the second, smaller bounce.">${g}</svg>`,
+          cap:'The ball bounces straight up and down. The picture is spread out sideways so you can see each point. Point 3 is just above the ground.'};
+}
+function figBars(withTotal, nums){
+  const panels = [{t:'Moment 1', ke:8, pe:2}, {t:'Moment 2', ke:2, pe:8}, {t:'Moment 3', ke:5, pe:5}];
+  const base = 150, u = 13;
+  let g = `<line class="fs thick" x1="6" y1="${base}" x2="424" y2="${base}"/>`;
+  panels.forEach((p, i) => {
+    const x0 = 10 + i * 142;
+    const bars = [['KE', p.ke, '#E8772E'], ['PE', p.pe, '#2441C9']];
+    if (withTotal) bars.push(['Total', p.ke + p.pe, '#0F8F83']);
+    const bw = withTotal ? 30 : 34, gap = withTotal ? 8 : 14;
+    bars.forEach((b, j) => {
+      const bx = x0 + 8 + j * (bw + gap), h = b[1] * u;
+      g += `<rect x="${bx}" y="${base - h}" width="${bw}" height="${h}" fill="${b[2]}" stroke="#12203F" stroke-width="2"/>`;
+      if (nums) g += `<text class="bn" x="${bx + bw / 2}" y="${base - h - 6}" text-anchor="middle">${b[1]}</text>`;
+      g += `<text class="bl" x="${bx + bw / 2}" y="${base + 16}" text-anchor="middle">${b[0]}</text>`;
+    });
+    g += `<text class="bt" x="${x0 + 62}" y="190" text-anchor="middle">${p.t}</text>`;
+  });
+  const alt = nums
+    ? 'Three bar graphs of kinetic energy (KE) and potential energy (PE). Moment 1: KE 8, PE 2. Moment 2: KE 2, PE 8. Moment 3: KE 5, PE 5.'
+    : 'Three bar graphs of kinetic energy (KE), potential energy (PE), and total energy. Moment 1 has a tall KE bar and a short PE bar. Moment 2 has a short KE bar and a tall PE bar. Moment 3 has KE and PE bars the same height. The total bar is the same height in all three.';
+  return {svg:`<svg viewBox="0 0 430 200" role="img" aria-label="${alt}">${g}</svg>`, cap:'Each graph is a snapshot of the same ball. Ignore friction and air.'};
+}
+function figHTML(q){
+  const f = q.f === 'pend' ? figPend() : q.f === 'bounce' ? figBounce() : q.f === 'bars' ? figBars(true, false) : q.f === 'barsNum' ? figBars(false, true) : null;
+  return f ? `<figure class="fig" style="margin-left:0;margin-right:0">${f.svg}<p class="cap">${f.cap}</p></figure>` : '';
+}
+
+/* ---------- screens ---------- */
+function homeHTML(){
+  const n = charged(), w = weakest();
+  const cells = SKILLS.map(s => { const m = state.mastery[s.id]; return `<i class="cell ${m >= MASTERED ? 'on' : (m >= 25 ? 'part' : '')}" style="--c:${s.color}"></i>`; }).join('');
+  const primary = !state.diag
+    ? `<button class="btn primary big" data-act="start-diag"><span class="t">Start the quick check</span><span class="d">8 questions, about 3 minutes. It finds what to practice first.</span></button>`
+    : `<button class="btn primary big" data-act="practice"><span class="t">Keep practicing</span><span class="d">Next up: ${esc(w.name)}</span></button>`;
+  const second = !state.diag
+    ? `<button class="btn big" data-act="practice"><span class="t">Skip to practice</span><span class="d">Jump right in. The site adjusts as you go.</span></button>` : '';
+  return `
+  <section class="card hero">
+    <h1>Energy Study Lab</h1>
+    <p class="sub">Mr. Ward’s 6th grade science, Unit 2. Practice that changes to match what you need.</p>
+    <div class="charge">
+      <div class="battery" role="img" aria-label="${n} of ${SKILLS.length} skills charged">${cells}</div>
+      <p class="chargetxt"><strong>${n} of ${SKILLS.length}</strong> skills charged</p>
+    </div>
+  </section>
+  ${msgHTML()}
+  <div class="stack mt">
+    ${primary}${second}
+    <button class="btn big" data-act="sprint"><span class="t">5-minute sprint</span><span class="d">Race the clock. Streaks earn bonus points.</span></button>
+    <button class="btn big" data-act="progress"><span class="t">My skills</span><span class="d">See what is charged and what needs practice.</span></button>
+    <button class="btn big" data-act="save"><span class="t">Save or load my progress</span><span class="d">Get a code so you can pick up where you left off.</span></button>
+  </div>
+  <p class="foot">Practice only. Nothing here is graded, and nothing is saved unless you copy your code.</p>`;
+}
+
+function quizHTML(){
+  const q = cur.q, s = SKILL[q.s], multi = q.t === 'multi';
+  let mid;
+  if (mode === 'diag') mid = `Quick check: question ${diagI + 1} of ${DIAG.length}`;
+  else if (mode === 'sprint') mid = `<span id="timer" class="timer">${fmt(Math.max(0, sprint.endAt - Date.now()))}</span><span class="pts">Score ${sprint.score}</span>${sprint.streak >= 2 ? `<span class="streak">Streak ${sprint.streak}</span>` : ''}`;
+  else mid = focus ? `Practice: ${esc(SKILL[focus].name)}` : 'Practice';
+  const chip = `<span class="chip" style="--c:${s.color}"><span class="dot"></span>${esc(s.name)}${mode === 'diag' ? '' : meter(q.s)}</span>`;
+
+  const opts = cur.order.map((orig, i) => {
+    const chosen = cur.sel.includes(orig), right = isRight(q, orig);
+    let cls = 'opt', tag = '';
+    if (!cur.done){ if (chosen) cls += ' sel'; }
+    else if (chosen && right){ cls += ' right'; tag = 'Correct'; }
+    else if (chosen && !right){ cls += ' wrong'; tag = 'Not this one'; }
+    else if (right){ cls += multi ? ' missed' : ' show'; tag = multi ? 'You missed this one' : 'Correct answer'; }
+    return `<button class="${cls}" data-act="opt" data-i="${i}" ${cur.done ? 'disabled' : ''} ${multi ? `aria-pressed="${chosen}"` : ''}>
+      <span class="badge" aria-hidden="true">${chosen && !cur.done && multi ? '✓' : LETTERS[i]}</span>
+      <span class="txt">${esc(q.o[orig])}${tag ? `<span class="tag">${tag}</span>` : ''}</span></button>`;
+  }).join('');
+
+  let actions = '';
+  if (!cur.done){
+    if (multi) actions += `<button class="btn primary" data-act="check" ${cur.sel.length ? '' : 'disabled'}>Check my answer</button>`;
+    if (mode === 'practice' && !cur.hint) actions += `<button class="btn" data-act="hint">Show a hint</button>`;
+  }
+  const hint = (cur.hint && !cur.done) ? `<div class="hint"><strong>Hint:</strong> ${esc(q.h)}</div>` : '';
+  const last = mode === 'diag' && diagI === DIAG.length - 1;
+
+  return `
+  <div class="bar"><button class="btn small ghost" data-act="home">Home</button><div class="barmid">${mid}</div></div>
+  ${chip}
+  <h2 class="qtext">${esc(q.q)}</h2>
+  ${figHTML(q)}
+  ${multi ? '<p class="pick">Select all that apply.</p>' : ''}
+  <div class="opts">${opts}</div>
+  ${actions ? `<div class="actions">${actions}</div>` : ''}
+  ${hint}
+  ${cur.done ? fbHTML() + `<button class="btn primary big next" data-act="next"><span class="t">${last ? 'See my results' : 'Next question'}</span></button>` : ''}`;
+}
+
+function fbHTML(){
+  const q = cur.q, r = cur.res, multi = q.t === 'multi';
+  const notes = cur.sel.filter(o => !isRight(q, o)).map(o => q.x && q.x[o]).filter(Boolean);
+  const praise = ['Correct!', 'Nice work!', 'Yes, that’s it!', 'You got it!'];
+  const head = r.correct ? praise[Math.floor(Math.random() * praise.length)] : (multi && cur.sel.some(o => isRight(q, o)) ? 'Close, but not quite.' : 'Not quite.');
+  let extra = '';
+  if (mode === 'sprint' && r.correct) extra += `<p><strong>+${r.pts} points</strong></p>`;
+  if (mode === 'practice' && !r.correct) extra += `<p>This one will come back later so you can try it again.</p>`;
+  if (r.mastered) extra += `<p><strong>Skill charged!</strong> You mastered ${esc(SKILL[q.s].name)}.</p>`;
+  return `<div class="fb ${r.correct ? 'good' : 'bad'}" id="fb" role="status">
+    <h3>${head}</h3>
+    ${multi && !r.correct ? '<p>Look at the marks above to see which choices were right.</p>' : ''}
+    ${notes.map(n => `<p>${esc(n)}</p>`).join('')}
+    <p>${esc(q.w)}</p>${extra}</div>`;
+}
+
+function diagDoneHTML(){
+  const bySkill = {};
+  diagRes.forEach(r => { bySkill[r.sid] = r.correct; });
+  const rows = SKILLS.map(s => {
+    const ok = bySkill[s.id];
+    return `<li><span class="mark ${ok ? 'good' : 'bad'}" aria-hidden="true">${ok ? '✓' : '✗'}</span><span>${esc(s.name)}: ${ok ? 'strong start' : 'practice this first'}</span></li>`;
+  }).join('');
+  const needs = SKILLS.filter(s => bySkill[s.id] === false).length;
+  return `
+  <h2>Quick check done</h2>
+  <p class="sub">${needs === 0 ? 'You got every skill right. Practice will mix in harder review.' : `${needs} skill${needs === 1 ? '' : 's'} to work on. Practice will start there.`}</p>
+  <div class="card mt"><ul class="results">${rows}</ul></div>
+  <div class="stack mt">
+    <button class="btn primary big" data-act="practice"><span class="t">Start practicing</span></button>
+    <button class="btn big" data-act="save"><span class="t">Save my progress</span><span class="d">Copy a code so you do not lose this.</span></button>
+    <button class="btn big" data-act="home"><span class="t">Back to home</span></button>
+  </div>`;
+}
+
+function progressHTML(){
+  const cards = SKILLS.map(s => {
+    const total = BANK.filter(q => q.s === s.id).length;
+    const tried = BANK.filter(q => q.s === s.id && state.status[q.i] !== 0).length;
+    return `<div class="card skill">
+      <div class="top"><h3><span class="dot" style="--c:${s.color}"></span>${esc(s.name)}</h3><span class="lvl">${levelLabel(s.id)} ${meter(s.id)}</span></div>
+      <p class="meta">${esc(s.blurb)}. ${tried} of ${total} questions tried.</p>
+      <div><button class="btn small" data-act="practice" data-skill="${s.id}">Practice this skill</button></div>
+    </div>`;
+  }).join('');
+  return `
+  <div class="bar"><button class="btn small ghost" data-act="home">Home</button></div>
+  <h2>My skills</h2>
+  <p class="sub">A skill is charged when all three cells are filled. Right answers fill cells. Misses bring practice back sooner.</p>
+  <div class="stack mt">${cards}</div>
+  <div class="stack mt">
+    <button class="btn primary big" data-act="practice"><span class="t">Practice what I need most</span></button>
+  </div>`;
+}
+
+function saveHTML(){
+  const code = encodeState(state);
+  const reset = confirmReset
+    ? `<p class="sub">This clears everything on this page. Your old code will still work if you saved it.</p><div class="actions"><button class="btn" data-act="reset2">Yes, start over</button><button class="btn ghost" data-act="reset-cancel">Cancel</button></div>`
+    : `<button class="btn small" data-act="reset1">Start over</button>`;
+  return `
+  <div class="bar"><button class="btn small ghost" data-act="home">Home</button></div>
+  <h2>Save or load my progress</h2>
+  ${msgHTML()}
+  <div class="card mt">
+    <h3>Your code</h3>
+    <ol class="steps"><li>Tap Copy code.</li><li>Paste it into a note, or email it to yourself.</li><li>Next time, paste it below and tap Load.</li></ol>
+    <textarea id="codebox" class="code" readonly rows="5" aria-label="Your save code">${code}</textarea>
+    <div class="actions"><button class="btn primary" data-act="copy">Copy code</button></div>
+    <p id="flash" class="sub" role="status"></p>
+  </div>
+  <div class="card mt">
+    <h3>Load a code</h3>
+    <textarea id="loadbox" class="code" rows="4" placeholder="Paste your code here" aria-label="Paste a save code here">${esc(loadText)}</textarea>
+    <div class="actions"><button class="btn primary" data-act="load">Load code</button></div>
+  </div>
+  <div class="mt">${reset}</div>`;
+}
+
+function sprintDoneHTML(){
+  const s = sprint;
+  const missed = Object.keys(s.missed).sort((a, b) => s.missed[b] - s.missed[a]).map(id => SKILL[id].name);
+  return `
+  <h2>Time’s up!</h2>
+  <div class="card mt">
+    <p class="score">${s.score}</p>
+    <p class="sub">${s.newBest ? 'New best score!' : `Your best is ${state.best}.`}</p>
+    <div class="statrow"><span>${s.correct} of ${s.total} correct</span><span>Best streak ${s.bestStreak}</span></div>
+    ${missed.length ? `<p class="mt"><strong>Worth another look:</strong> ${missed.map(esc).join(', ')}</p>` : ''}
+  </div>
+  <div class="stack mt">
+    <button class="btn primary big" data-act="sprint"><span class="t">Play again</span></button>
+    <button class="btn big" data-act="practice"><span class="t">Practice</span></button>
+    <button class="btn big" data-act="save"><span class="t">Save my progress</span><span class="d">Your score and skills go in the code.</span></button>
+    <button class="btn big" data-act="home"><span class="t">Back to home</span></button>
+  </div>`;
+}
+
+/* ---------- rendering ---------- */
+function render(opts){
+  opts = opts || {};
+  const fn = {home:homeHTML, quiz:quizHTML, diagdone:diagDoneHTML, progress:progressHTML, save:saveHTML, sprintdone:sprintDoneHTML}[screen];
+  app.innerHTML = fn();
+  if (!opts.keepScroll){ window.scrollTo(0, 0); app.focus({preventScroll:true}); }
+  if (opts.reveal){ const fb = document.getElementById('fb'); if (fb && fb.scrollIntoView) fb.scrollIntoView({block:'nearest', behavior:reduceMotion ? 'auto' : 'smooth'}); }
+}
+
+/* ---------- flow ---------- */
+function loadQ(q){
+  cur = {q, order:shuffle(q.o.map((_, i) => i)), sel:[], hint:false, done:false, res:null};
+  screen = 'quiz'; render();
+}
+function startDiag(){ stopSprint(); mode = 'diag'; focus = null; diagI = 0; diagRes = []; loadQ(DIAG[0]); }
+function nextQ(){
+  if (mode === 'diag'){
+    diagI++;
+    if (diagI >= DIAG.length){ state.diag = true; screen = 'diagdone'; render(); }
+    else loadQ(DIAG[diagI]);
+  } else {
+    loadQ(pickQuestion(mode === 'practice' ? focus : null));
+  }
+}
+function submit(){
+  const q = cur.q;
+  if (cur.done || !cur.sel.length) return;
+  const correct = grade(q, cur.sel);
+  const res = {correct};
+  if (mode === 'diag'){ applyDiag(q, correct); diagRes.push({sid:q.s, correct}); }
+  else {
+    Object.assign(res, applyAnswer(q, correct, cur.hint));
+    if (mode === 'sprint'){
+      sprint.total++;
+      if (correct){ sprint.correct++; sprint.streak++; sprint.bestStreak = Math.max(sprint.bestStreak, sprint.streak); res.pts = 10 + Math.min(sprint.streak, 5) * 2; sprint.score += res.pts; }
+      else { sprint.streak = 0; sprint.missed[q.s] = (sprint.missed[q.s] || 0) + 1; }
+    }
+  }
+  cur.done = true; cur.res = res;
+  render({keepScroll:true, reveal:true});
+}
+
+/* ---------- sprint ---------- */
+function startSprint(){
+  stopSprint(); mode = 'sprint'; focus = null;
+  sprint = {score:0, correct:0, total:0, streak:0, bestStreak:0, endAt:Date.now() + 300000, missed:{}, tid:null, newBest:false};
+  sprint.tid = setInterval(tick, 250);
+  loadQ(pickQuestion(null));
+}
+function tick(){
+  if (!sprint) return;
+  const left = sprint.endAt - Date.now();
+  const el = document.getElementById('timer');
+  if (el) el.textContent = fmt(Math.max(0, left));
+  if (left <= 0) endSprint();
+}
+function stopSprint(){ if (sprint && sprint.tid){ clearInterval(sprint.tid); sprint.tid = null; } }
+function endSprint(){
+  stopSprint();
+  if (sprint.score > state.best){ state.best = sprint.score; sprint.newBest = true; }
+  screen = 'sprintdone'; render();
+}
+
+/* ---------- save and load ---------- */
+function flash(t){ const el = document.getElementById('flash'); if (el) el.textContent = t; }
+async function copyCode(){
+  const ta = document.getElementById('codebox');
+  if (!ta) return;
+  try { await navigator.clipboard.writeText(ta.value); flash('Copied! Paste it somewhere safe.'); }
+  catch (e) {
+    try { ta.focus(); ta.select(); ta.setSelectionRange(0, 99999); document.execCommand('copy'); flash('Copied! Paste it somewhere safe.'); }
+    catch (e2) { flash('Press and hold the code, then tap Copy.'); }
+  }
+}
+
+/* ---------- events ---------- */
+document.addEventListener('click', e => {
+  const el = e.target.closest('[data-act]');
+  if (!el || el.disabled) return;
+  const act = el.dataset.act;
+  if (['home', 'progress', 'save', 'start-diag', 'practice', 'sprint'].includes(act)) confirmReset = false;
+  switch (act){
+    case 'home': stopSprint(); msg = ''; screen = 'home'; render(); break;
+    case 'start-diag': msg = ''; startDiag(); break;
+    case 'practice': msg = ''; stopSprint(); mode = 'practice'; focus = el.dataset.skill || null; loadQ(pickQuestion(focus)); break;
+    case 'sprint': msg = ''; startSprint(); break;
+    case 'progress': stopSprint(); msg = ''; screen = 'progress'; render(); break;
+    case 'save': stopSprint(); screen = 'save'; render(); break;
+    case 'opt': {
+      if (!cur || cur.done) break;
+      const orig = cur.order[+el.dataset.i];
+      if (cur.q.t === 'multi'){
+        cur.sel = cur.sel.includes(orig) ? cur.sel.filter(x => x !== orig) : cur.sel.concat(orig);
+        render({keepScroll:true});
+      } else { cur.sel = [orig]; submit(); }
+      break;
+    }
+    case 'check': submit(); break;
+    case 'hint': cur.hint = true; render({keepScroll:true}); break;
+    case 'next': nextQ(); break;
+    case 'copy': copyCode(); break;
+    case 'load': {
+      const box = document.getElementById('loadbox');
+      loadText = box ? box.value : '';
+      const r = decodeState(loadText);
+      if (r.error){ msg = r.error; msgKind = 'bad'; }
+      else { state = r.state; resetSess(); loadText = ''; msg = 'Progress loaded. Welcome back!'; msgKind = 'good'; }
+      render({keepScroll:true}); break;
+    }
+    case 'reset1': confirmReset = true; render({keepScroll:true}); break;
+    case 'reset-cancel': confirmReset = false; render({keepScroll:true}); break;
+    case 'reset2': state = freshState(); resetSess(); confirmReset = false; msg = 'Progress cleared.'; msgKind = 'good'; screen = 'home'; render(); break;
+  }
+});
+
+render();
+</script>
+</body>
+</html>
