@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+=<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
@@ -149,6 +149,11 @@ button:focus-visible,textarea:focus-visible{outline:4px solid var(--focus); outl
 @media (prefers-reduced-motion: reduce){
   .btn,.opt{transition:none}
 }
+
+/* ---------- challenge label ---------- */
+.challenge{display:flex; align-items:center; gap:12px; flex-wrap:wrap; background:var(--volt); color:#12203F; border:3px solid #12203F; border-radius:14px; box-shadow:4px 4px 0 var(--shadow); padding:10px 14px; margin:0 0 14px}
+.challenge .tagc{background:#12203F; color:var(--volt); font-weight:900; font-size:22px; letter-spacing:.06em; padding:2px 12px; border-radius:8px}
+.challenge .lvlc{font-weight:700; font-size:16px; flex:1 1 220px}
 </style>
 </head>
 <body>
@@ -158,7 +163,8 @@ button:focus-visible,textarea:focus-visible{outline:4px solid var(--focus); outl
 /* Question bank. IMPORTANT: save codes depend on question ORDER.
    Add new questions at the END of the list. Never reorder or delete.
    Fields: id, s=skill, q=question, o=options, a=answer index (or array for t:'multi'),
-   h=hint, w=why, x={optionIndex:feedback}, d=1 for quick-check question, f=figure. */
+   h=hint, w=why, x={optionIndex:feedback}, d=1 for quick-check question, f=figure,
+   c=1 hard challenge, c=2 very hard challenge (challenge questions only appear in the Challenge round). */
 const BANK = [
 
 /* ===== Kinetic energy ===== */
@@ -509,7 +515,231 @@ const BANK = [
  o:['Some of its kinetic energy changed to thermal energy','Its energy was destroyed','The floor and wheels got slightly warmer','The total amount of energy stayed the same'],a:1,
  h:'Look for the statement that breaks the law of conservation of energy.',
  w:'The energy was not destroyed. It changed from kinetic energy into thermal energy, and the total stayed the same.',
- x:{0:'This statement is correct, so it is not the answer.',2:'This statement is correct, so it is not the answer.',3:'This statement is correct, so it is not the answer.'}}
+ x:{0:'This statement is correct, so it is not the answer.',2:'This statement is correct, so it is not the answer.',3:'This statement is correct, so it is not the answer.'}},
+
+/* ===== Energy changes in pictures (scenes drawn in ui.js) ===== */
+{id:'pic1',s:'pics',d:1,f:'sc_climb',q:'A wrestler climbs a ladder to grab a belt hanging high above the ring. Which energy change is happening?',
+ o:['Chemical potential to kinetic to gravitational potential','Gravitational potential to kinetic','Elastic potential to kinetic','Kinetic to thermal'],a:0,
+ h:'Where does his climbing energy come from, and what is higher at the end?',
+ w:'His muscles use chemical potential energy from food to move (kinetic). Climbing lifts him higher, so he gains gravitational potential energy.',
+ x:{1:'That is what would happen if he fell. He is going up.',2:'Nothing is stretched or squished in this picture.',3:'Some thermal energy is made as he climbs, but it is not the main change.'}},
+
+{id:'pic2',s:'pics',f:'sc_climb',q:'Where does the wrestler’s energy to climb the ladder come from?',
+ o:['Chemical potential energy from the food he ate','Elastic potential energy in the ladder','Nuclear energy in the mat','Thermal energy in the ropes'],a:0,
+ h:'What does a person use for fuel?',
+ w:'People get energy from food. Muscles change that chemical potential energy into motion.',
+ x:{1:'The ladder is not stretched or squished.',2:'The mat is not releasing nuclear energy.',3:'Thermal energy flows from hot to cold. It is not what powers a climb.'}},
+
+{id:'pic3',s:'pics',f:'sc_leap',q:'A wrestler jumps off the top of the ladder and falls toward the mat. As he falls, which energy change is happening?',
+ o:['Gravitational potential to kinetic','Kinetic to gravitational potential','Chemical potential to elastic potential','Thermal to radiant'],a:0,
+ h:'He is getting lower and faster.',
+ w:'Falling means less height (less gravitational potential energy) and more speed (more kinetic energy).',
+ x:{1:'That would be going up, like climbing the ladder.'}},
+
+{id:'pic4',s:'pics',t:'multi',f:'sc_leap',q:'The wrestler is halfway down in the air. Which of these forms of energy does he have right now?',
+ o:['Kinetic energy','Gravitational potential energy','Elastic potential energy','Radiant energy'],a:[0,1],
+ h:'He is moving and he is up high.',
+ w:'He is moving (kinetic) and still above the mat (gravitational potential). Nothing is stretched, and he is not giving off light.',
+ x:{2:'Nothing is stretched or squished.',3:'Radiant energy is light and similar waves. He is not giving any off.'}},
+
+{id:'pic5',s:'pics',f:'sc_leap',q:'Compared with when he stood at the top of the ladder, how much kinetic energy does the wrestler have just before he hits the mat?',
+ o:['More, because he is moving the fastest','Less, because he is lower','The same as at the top','None, because he is in the air'],a:0,
+ h:'At the top he was standing still.',
+ w:'At the top he was not moving. Just before landing he is falling fast, so his kinetic energy is at its greatest.',
+ x:{1:'Lower means less potential energy, but he is moving much faster.',3:'Being in the air does not matter. He is moving, so he has kinetic energy.'}},
+
+{id:'pic6',s:'pics',t:'multi',f:'sc_slam',q:'The wrestler lands with a loud THUD. Which energy changes happen when he hits the mat?',
+ o:['Kinetic to sound','Kinetic to thermal','Thermal to kinetic','Sound to gravitational potential'],a:[0,1],
+ h:'He stops moving. Where does the motion go? You can hear one of the answers.',
+ w:'His kinetic energy changes into sound energy (the thud) and thermal energy (the mat and his body warm up a tiny bit).',
+ x:{2:'That is backwards. The mat does not start him moving.',3:'Sound does not lift anything into the air.'}},
+
+{id:'pic7',s:'pics',f:'sc_slam',q:'After the THUD, the wrestler lies still on the mat. What happened to the energy he had while falling?',
+ o:['It changed into sound and thermal energy','It was destroyed','It all turned back into gravitational potential energy','It disappeared into the ropes'],a:0,
+ h:'Remember the law of conservation of energy.',
+ w:'Energy is never destroyed. His falling energy changed into sound and thermal energy, which spread out into the room.',
+ x:{1:'Energy is never destroyed. It changes form.',2:'He is lying on the mat, so he did not gain height.'}},
+
+{id:'pic8',s:'pics',f:'sc_slide',q:'A wrestler slides across the mat and slowly comes to a stop. Which energy change is happening?',
+ o:['Kinetic to thermal','Thermal to kinetic','Gravitational potential to kinetic','Chemical potential to nuclear'],a:0,
+ h:'What force slows something that slides?',
+ w:'Friction between his body and the mat changes kinetic energy into thermal energy. The mat and his skin get slightly warmer.',
+ x:{1:'That is backwards. Friction does not make motion from heat.',2:'He is not falling, so height is not changing.'}},
+
+{id:'pic9',s:'pics',f:'sc_ropes',q:'A wrestler runs at the ropes. The ropes stretch back, then spring him toward the center of the ring. Which chain of energy changes happens?',
+ o:['Kinetic to elastic potential to kinetic','Gravitational potential to kinetic to sound','Chemical potential to thermal to radiant','Elastic potential to gravitational potential to kinetic'],a:0,
+ h:'The ropes stretch like a giant rubber band.',
+ w:'His motion stretches the ropes (kinetic to elastic potential). The ropes spring back and push him (elastic potential to kinetic).',
+ x:{3:'He starts out running, not stretched. The ropes get stretched by his motion first.'}},
+
+{id:'pic10',s:'pics',f:'sc_ropes',q:'When the ropes are stretched the most, the wrestler stops for an instant. Which energy is greatest right then?',
+ o:['Elastic potential energy','Kinetic energy','Radiant energy','Nuclear energy'],a:0,
+ h:'Stopped means no motion. What is stretched?',
+ w:'He is stopped, so kinetic energy is zero for that instant. The stretched ropes hold the energy as elastic potential energy.',
+ x:{1:'He is stopped for that instant, so kinetic energy is zero.'}},
+
+{id:'pic11',s:'pics',t:'multi',f:'sc_arena',q:'Look at the arena. Which forms of energy can you find in the picture?',
+ o:['Radiant energy (light from the spotlights)','Sound energy (from the speakers)','Electrical energy (in the cables)','Nuclear energy (in the ring mat)'],a:[0,1,2],
+ h:'Look at the lights, the speaker, and the cables.',
+ w:'The spotlights give off radiant energy, the speaker gives off sound, and the cables carry electrical energy. The mat has no nuclear energy to speak of.',
+ x:{3:'Nuclear energy is stored inside atoms and only released by fission or fusion.'}},
+
+{id:'pic12',s:'pics',f:'sc_arena',q:'The speakers are plugged in and playing music for the crowd. Which energy change makes the sound?',
+ o:['Electrical to sound','Sound to electrical','Radiant to sound','Chemical potential to nuclear'],a:0,
+ h:'What does the speaker plug into?',
+ w:'The speaker takes electrical energy from the cable and changes it into sound energy.',
+ x:{1:'That would be a microphone.'}},
+
+{id:'pic13',s:'pics',f:'sc_arena',q:'The spotlights are plugged in. They shine on the ring and get hot. Which energy change is happening?',
+ o:['Electrical to radiant and thermal','Radiant to electrical','Sound to thermal','Chemical potential to elastic potential'],a:0,
+ h:'One form in, two forms out.',
+ w:'A spotlight changes electrical energy into radiant energy (light) and thermal energy (heat) at the same time.',
+ x:{1:'That is what a solar panel does.'}},
+
+{id:'pic14',s:'pics',f:'sc_bike',q:'A cyclist eats a banana and pedals up a hill. Which energy is INCREASING as she climbs?',
+ o:['Gravitational potential energy','Chemical potential energy in her body','Elastic potential energy','Nuclear energy'],a:0,
+ h:'She is getting higher.',
+ w:'Going up a hill means gaining height, so her gravitational potential energy increases.',
+ x:{1:'Her chemical energy is being used up as she pedals, so it is decreasing.'}},
+
+{id:'pic15',s:'pics',f:'sc_bike',q:'Which energy in the cyclist’s body is being used up as she pedals up the hill?',
+ o:['Chemical potential energy','Gravitational potential energy','Radiant energy','Sound energy'],a:0,
+ h:'Think about the banana.',
+ w:'Her muscles are changing chemical potential energy from food into motion. That store gets smaller as she pedals.',
+ x:{1:'Her gravitational potential energy is going up as she climbs.'}},
+
+{id:'pic16',s:'pics',f:'sc_tramp',q:'In picture A, a girl is at the very top of her trampoline jump and stopped for an instant. Which energy is greatest?',
+ o:['Gravitational potential energy','Kinetic energy','Elastic potential energy','Sound energy'],a:0,
+ h:'She is stopped, and she is as high as she gets.',
+ w:'Stopped means no kinetic energy. She is at her highest, so gravitational potential energy is greatest.',
+ x:{1:'She is stopped for an instant, so kinetic energy is zero.',2:'The trampoline is not stretched in picture A.'}},
+
+{id:'pic17',s:'pics',f:'sc_tramp',q:'In picture B, she is at the very bottom, the trampoline is stretched down, and she is stopped for an instant. Which energy is greatest?',
+ o:['Elastic potential energy','Gravitational potential energy','Kinetic energy','Radiant energy'],a:0,
+ h:'What is stretched?',
+ w:'The stretched trampoline stores elastic potential energy. She is stopped, so there is no kinetic energy for that instant.',
+ x:{1:'She is at her lowest point, so gravitational potential energy is smallest.',2:'She is stopped for an instant, so kinetic energy is zero.'}},
+
+{id:'pic18',s:'pics',f:'sc_tramp',q:'Going from picture A down to picture B, which chain of energy changes happens?',
+ o:['Gravitational potential to kinetic to elastic potential','Elastic potential to kinetic to gravitational potential','Chemical potential to sound to thermal','Kinetic to gravitational potential to elastic potential'],a:0,
+ h:'She falls, then the trampoline stretches.',
+ w:'She falls (gravitational potential to kinetic). Then the trampoline stretches and stores her motion energy (kinetic to elastic potential).',
+ x:{1:'That chain goes from B back up to A.'}},
+
+/* ===== CHALLENGE questions (c:1 hard, c:2 very hard). Only used in Challenge round. ===== */
+{id:'c1',s:'pe',c:1,q:'Use g = 10 m/s². A 2 kg ball is lifted 5 m above the floor. How much gravitational potential energy does it gain? (PE = mass × g × height)',
+ o:['100 J','10 J','50 J','20 J'],a:0,
+ h:'Multiply all three numbers: mass × g × height.',
+ w:'PE = 2 kg × 10 m/s² × 5 m = 100 J.',
+ x:{1:'You used only some of the numbers. Use all three: 2 × 10 × 5.',2:'That is 10 × 5, which forgets the mass.',3:'That is 2 × 10, which forgets the height.'}},
+
+{id:'c2',s:'mech',c:1,q:'The 2 kg ball from the last question (lifted 5 m, g = 10) is dropped. Ignore air. How much kinetic energy does it have just before it hits the floor?',
+ o:['100 J','200 J','50 J','0 J'],a:0,
+ h:'Where did its potential energy go?',
+ w:'All 100 J of gravitational potential energy changes into kinetic energy, because nothing else takes any away.',
+ x:{1:'Energy cannot double. The ball only had 100 J to start.',2:'Without friction or air, no energy is lost along the way.',3:'Just before landing it is moving fastest, so it has the most kinetic energy.'}},
+
+{id:'c3',s:'ke',c:1,q:'Use KE = ½ × mass × speed². A 4 kg cart is moving at 3 m/s. What is its kinetic energy?',
+ o:['18 J','36 J','12 J','6 J'],a:0,
+ h:'Square the speed first: 3 × 3 = 9.',
+ w:'KE = ½ × 4 × 3² = ½ × 4 × 9 = 18 J.',
+ x:{1:'That is 4 × 9, which forgets the ½.',2:'That is 4 × 3, which forgets to square the speed.',3:'That is ½ × 4 × 3, which forgets to square the speed.'}},
+
+{id:'c4',s:'ke',c:2,q:'The 4 kg cart speeds up from 3 m/s to 6 m/s. How many times bigger does its kinetic energy get?',
+ o:['4 times','2 times','6 times','8 times'],a:0,
+ h:'Speed is squared in the formula. Compare 6² with 3².',
+ w:'At 3 m/s the cart has 18 J. At 6 m/s it has ½ × 4 × 36 = 72 J. 72 ÷ 18 = 4, so doubling the speed makes kinetic energy 4 times bigger.',
+ x:{1:'It would be 2 times if kinetic energy only went up with speed, but the speed is squared.',2:'Try the numbers: compare ½ × 4 × 3² with ½ × 4 × 6².',3:'That is too big. Calculate both kinetic energies and divide.'}},
+
+{id:'c5',s:'mech',c:2,q:'You drop a 1 kg ball from 10 m and a 2 kg ball from 5 m. Ignore air. Which ball has more kinetic energy just before hitting the ground?',
+ o:['They have the same kinetic energy','The 1 kg ball','The 2 kg ball','There is not enough information'],a:0,
+ h:'Find each ball’s starting potential energy with mass × g × height.',
+ w:'1 × g × 10 = 10g and 2 × g × 5 = 10g. They start with the same potential energy, so they end with the same kinetic energy.',
+ x:{1:'It starts higher, but it has half the mass. Multiply to check.',2:'It has more mass, but it starts lower. Multiply to check.',3:'You can solve it. Multiply mass × height for each ball.'}},
+
+{id:'c6',s:'ke',c:1,q:'A heavy bowling ball and a light tennis ball are dropped from the same height. Ignore air. Just before they land, which statement is true?',
+ o:['They move at the same speed, but the bowling ball has more kinetic energy','The bowling ball moves faster and has more kinetic energy','The tennis ball moves faster because it is lighter','They have the same speed and the same kinetic energy'],a:0,
+ h:'Without air, everything falls the same way. Then think about mass and kinetic energy.',
+ w:'Without air resistance, all objects fall at the same speed. The bowling ball has more mass, so it has more kinetic energy at that same speed.',
+ x:{1:'Heavier does not mean faster when you ignore air.',2:'Lighter objects do not fall faster when you ignore air.',3:'The speeds match, but kinetic energy also depends on mass.'}},
+
+{id:'c7',s:'pe',c:1,q:'On the Moon, g is only 1.6 m/s². An astronaut lifts a 2 kg rock 5 m. How much gravitational potential energy does it gain? (PE = mass × g × height)',
+ o:['16 J','100 J','10 J','3.2 J'],a:0,
+ h:'Use 1.6 for g.',
+ w:'PE = 2 × 1.6 × 5 = 16 J. The same lift stores less energy on the Moon because gravity is weaker.',
+ x:{1:'That is the answer on Earth with g = 10. The Moon’s gravity is weaker.',2:'That is only 2 × 5. Do not forget g.',3:'That is 2 × 1.6. Do not forget the height.'}},
+
+{id:'c8',s:'mech',c:2,q:'A coaster car starts at rest at the top of a 40 m hill. Ignore friction. The next hill is 50 m tall. What happens?',
+ o:['The car cannot make it over the 50 m hill','The car makes it over with energy to spare','The car reaches exactly the top of the 50 m hill','It depends on how heavy the car is'],a:0,
+ h:'Can the car ever have more potential energy than it started with?',
+ w:'The car can never rise higher than where it started if no energy is added. A 50 m hill needs more potential energy than the car had at 40 m.',
+ x:{1:'It would need extra energy. Where would that come from?',2:'Reaching 50 m takes more potential energy than it started with.',3:'Heavier or lighter, the car can never rise above its starting height without friction or an outside push.'}},
+
+{id:'c9',s:'swing',c:1,f:'pend',q:'A pendulum is released from point Z. Because of friction, on the other side it only swings up to point W (not as high as V). Which statement is true?',
+ o:['Its mechanical energy got smaller, and the missing energy became thermal energy','Its total energy got smaller because energy was destroyed','Its mechanical energy stayed the same because it is still moving','It gained energy from the air'],a:0,
+ h:'Compare the heights. What does friction do to mechanical energy?',
+ w:'W is lower than V, so the pendulum has less potential energy there. Friction changed some mechanical energy into thermal energy. The total of all forms stayed the same.',
+ x:{1:'Energy is never destroyed. It changed form.',2:'It could not be lower if its mechanical energy stayed the same.',3:'Air takes energy from a pendulum. It does not add any.'}},
+
+{id:'c10',s:'cons',c:1,q:'A real pendulum starts with 100 J of potential energy. After a few swings, its highest point only has 60 J of potential energy. Where did the other 40 J go?',
+ o:['It changed into thermal energy (and a little sound) because of friction','It was destroyed','It went into the pendulum’s mass','It is still potential energy, hidden at the bottom'],a:0,
+ h:'Energy is never destroyed.',
+ w:'Friction at the pivot and air resistance changed 40 J of mechanical energy into thermal energy and a little sound. The 100 J total is still there.',
+ x:{1:'Energy is never destroyed.',2:'The pendulum’s mass does not change.',3:'At the bottom the energy shows up as kinetic energy. None of it is hidden.'}},
+
+{id:'c11',s:'cons',c:1,q:'A ball bounces lower each time. After each bounce, which amount stays exactly the same?',
+ o:['The total of all forms of energy, including thermal and sound','The ball’s mechanical energy','The ball’s kinetic energy','The ball’s potential energy at the top'],a:0,
+ h:'Think about the law of conservation of energy.',
+ w:'The ball’s mechanical energy shrinks because some turns into thermal and sound energy. When you count every form, the total never changes.',
+ x:{1:'Mechanical energy shrinks each bounce. That is why the bounces get lower.',2:'Kinetic energy changes constantly as the ball moves.',3:'The top of each bounce is lower, so this keeps changing.'}},
+
+{id:'c12',s:'cons',c:1,q:'Which of these shows energy being destroyed?',
+ o:['A puck slows down and stops','A candle burns down','A battery runs out','None of them. Energy is never destroyed'],a:3,
+ h:'Check the law of conservation of energy.',
+ w:'In every case the energy changed form. The puck’s became thermal energy, the candle’s became heat and light, and the battery’s became other forms. None was destroyed.',
+ x:{0:'The puck’s kinetic energy changed into thermal energy through friction.',1:'The candle changed chemical energy into thermal and radiant energy.',2:'The battery’s chemical energy changed into electrical and thermal energy.'}},
+
+{id:'c13',s:'forms',c:1,q:'A cup of hot cocoa cools down on a table. Which statement best describes what happens to its thermal energy?',
+ o:['It flows into the cooler air and table, so the cocoa has less and the surroundings have more','It disappears because the cocoa is cooling','Cold flows from the air into the cocoa','It changes into mass in the cup'],a:0,
+ h:'Thermal energy moves from hot to cold.',
+ w:'Thermal energy flows from hot to cold. The cocoa loses some and the surroundings gain it, so the total is conserved.',
+ x:{1:'Energy is never destroyed.',2:'There is no “cold” that flows. Thermal energy flows out of the hot cocoa.',3:'Thermal energy does not turn into mass here.'}},
+
+{id:'c14',s:'transform',c:1,q:'Sunlight hits a solar panel that powers a fan, and the fan blows air. Which chain of energy changes is correct?',
+ o:['Radiant to electrical to kinetic','Electrical to radiant to kinetic','Radiant to kinetic to electrical','Thermal to chemical potential to kinetic'],a:0,
+ h:'Sunlight comes first. Moving air comes last.',
+ w:'The panel changes radiant energy (sunlight) into electrical energy. The fan motor changes electrical energy into kinetic energy (moving air).',
+ x:{1:'The chain starts in the wrong place. The Sun’s light is radiant energy and comes first.',2:'The fan does not make electricity here. The panel does.'}},
+
+{id:'c15',s:'transform',c:2,q:'A coal power plant burns coal to heat water into steam. The steam spins a turbine, which turns a generator. Which chain of energy changes is correct?',
+ o:['Chemical potential to thermal to kinetic to electrical','Thermal to chemical potential to electrical to kinetic','Chemical potential to kinetic to thermal to electrical','Nuclear to thermal to radiant to electrical'],a:0,
+ h:'Follow the story from the coal to the wires.',
+ w:'Burning coal changes chemical potential energy into thermal energy. The hot steam spins the turbine (kinetic), and the generator changes that into electrical energy.',
+ x:{3:'Coal is burned (a chemical change). It is not split like nuclear fuel.',2:'The steam is made by heat first, and then it spins the turbine.',1:'This chain starts in the wrong place. Coal stores chemical potential energy.'}},
+
+{id:'c16',s:'pics',c:2,f:'sc_leap',q:'Wrestler A has a mass of 100 kg and wrestler B has a mass of 50 kg. They each jump from the same ladder height. Ignore air. Just before landing, which statement is true?',
+ o:['They move at the same speed, and A has twice as much kinetic energy','A moves twice as fast, and they have the same kinetic energy','A moves twice as fast and has twice as much kinetic energy','They move at the same speed and have the same kinetic energy'],a:0,
+ h:'Think about the falling ball question. Same height means the same speed. What about mass and kinetic energy?',
+ w:'Same height with no air means the same speed. A has double the mass, so A starts with double the potential energy and ends with double the kinetic energy.',
+ x:{1:'Without air, they fall at the same speed. A has more mass, so A has more kinetic energy.',2:'They fall at the same speed. Heavier objects do not fall faster.',3:'The speeds match, but A has more mass, so A has more kinetic energy.'}},
+
+{id:'c17',s:'pics',c:1,f:'sc_climb',q:'Use g = 10 m/s². A 60 kg wrestler climbs 2 m up the ladder. How much gravitational potential energy does he gain? (PE = mass × g × height)',
+ o:['1,200 J','120 J','600 J','12 J'],a:0,
+ h:'Multiply 60 × 10 × 2.',
+ w:'PE = 60 × 10 × 2 = 1,200 J.',
+ x:{1:'That is 60 × 2. Do not forget g.',2:'That is 60 × 10. Do not forget the height.',3:'That is much too small. Multiply all three numbers.'}},
+
+{id:'c18',s:'pe',c:2,q:'Use g = 10 m/s². A 5 kg box on a shelf has 100 J of gravitational potential energy. How high is the shelf?',
+ o:['2 m','20 m','0.5 m','10 m'],a:0,
+ h:'PE = mass × g × height. Find mass × g first, then divide the energy by it.',
+ w:'mass × g = 5 × 10 = 50. Height = 100 ÷ 50 = 2 m.',
+ x:{1:'That is 100 ÷ 5. You also need to divide by g.',2:'That is 50 ÷ 100, which is upside down. Divide the energy by 50.',3:'A 10 m shelf would give 5 × 10 × 10 = 500 J, which is too much.'}},
+
+{id:'c19',s:'ke',c:2,q:'Use KE = ½ × mass × speed². A 1 kg ball has 32 J of kinetic energy. How fast is it moving?',
+ o:['8 m/s','16 m/s','32 m/s','4 m/s'],a:0,
+ h:'Work backward: ½ × 1 × speed² = 32. What number times itself gives the result?',
+ w:'½ × speed² = 32, so speed² = 64. Since 8 × 8 = 64, the speed is 8 m/s.',
+ x:{1:'16 × 16 = 256, which is much too big.',2:'32 × 32 = 1,024, which is far too big.',3:'4 × 4 = 16, and ½ × 16 = 8 J, which is too small.'}}
 
 ];
 /*LOGIC_START*/
@@ -522,7 +752,8 @@ const SKILLS = [
   {id:'forms',     name:'Forms of energy',             blurb:'Thermal, sound, radiant, electrical, nuclear',  color:'#D4A017'},
   {id:'transform', name:'Energy transformations',      blurb:'How energy changes form',                       color:'#D9467A'},
   {id:'cons',      name:'Conservation of energy',      blurb:'Energy is never destroyed',                     color:'#3C9B4F'},
-  {id:'fric',      name:'Friction and thermal energy', blurb:'Where did the motion go?',                      color:'#C94B3B'}
+  {id:'fric',      name:'Friction and thermal energy', blurb:'Where did the motion go?',                      color:'#C94B3B'},
+  {id:'pics',      name:'Energy changes in pictures',  blurb:'Spot the energy change in a scene',             color:'#0A95B8'}
 ];
 const SKILL = Object.fromEntries(SKILLS.map(s => [s.id, s]));
 BANK.forEach((q, i) => { q.i = i; });
@@ -544,7 +775,7 @@ function grade(q, sel){
   if (q.t === 'multi') return sel.length === q.a.length && q.a.every(x => sel.includes(x));
   return sel.length === 1 && sel[0] === q.a;
 }
-function started(sid){ return BANK.some(q => q.s === sid && state.status[q.i] !== 0); }
+function started(sid){ return BANK.some(q => !q.c && q.s === sid && state.status[q.i] !== 0); }
 function levelLabel(sid){
   const m = state.mastery[sid];
   if (!started(sid)) return 'Not started';
@@ -578,7 +809,7 @@ function pickQuestion(focus){
     if (!focus && s.id === sess.lastSkill) w *= 0.3;
     return w;
   });
-  const cands = BANK.filter(q => q.s === skill.id && q.id !== sess.lastQ);
+  const cands = BANK.filter(q => !q.c && q.s === skill.id && q.id !== sess.lastQ);
   return weightedPick(cands, q => {
     const st = state.status[q.i];
     const gap = sess.asked - (sess.qAt[q.id] === undefined ? -99 : sess.qAt[q.id]);
@@ -598,13 +829,32 @@ function applyAnswer(q, correct, usedHint){
   sess.lastSkill = q.s; sess.lastQ = q.id;
   return {before, after:m, mastered:before < MASTERED && m >= MASTERED};
 }
+/* ---------- challenge round: separate from skill meters; earns stars ---------- */
+const CHALLENGE_TOTAL = BANK.filter(q => q.c).length;
+function stars(){ return BANK.filter(q => q.c && state.status[q.i] === 1).length; }
+function pickChallenge(){
+  const cands = BANK.filter(q => q.c && q.id !== sess.lastQ);
+  return weightedPick(cands, q => {
+    const st = state.status[q.i];
+    const gap = sess.asked - (sess.qAt[q.id] === undefined ? -99 : sess.qAt[q.id]);
+    let w = st === 0 ? 5 : (st === 2 ? (gap >= 2 ? 6 : 0.4) : 0.8);
+    if (gap < 4) w *= 0.2;
+    return w;
+  });
+}
+function applyChallenge(q, correct){
+  const had = state.status[q.i] === 1;
+  if (correct) state.status[q.i] = 1; else if (!had) state.status[q.i] = 2;
+  sess.asked++; sess.qAt[q.id] = sess.asked; sess.lastQ = q.id;
+  return {newStar: correct && !had};
+}
 function applyDiag(q, correct){
   state.mastery[q.s] = correct ? 50 : 10;
   state.status[q.i] = correct ? 1 : 2;
 }
 
 /* ---------- save codes ---------- */
-const CODE_VER = 'A';
+const CODE_VER = 'C';
 function b36(n, len){ return Math.max(0, Math.round(n)).toString(36).toUpperCase().padStart(len, '0'); }
 function checksum(str){ let h = 7; for (const ch of str){ h = (h * 31 + ch.charCodeAt(0)) % 1296; } return b36(h, 2); }
 function encodeState(st){
@@ -699,8 +949,121 @@ function figBars(withTotal, nums){
     : 'Three bar graphs of kinetic energy (KE), potential energy (PE), and total energy. Moment 1 has a tall KE bar and a short PE bar. Moment 2 has a short KE bar and a tall PE bar. Moment 3 has KE and PE bars the same height. The total bar is the same height in all three.';
   return {svg:`<svg viewBox="0 0 430 200" role="img" aria-label="${alt}">${g}</svg>`, cap:'Each graph is a snapshot of the same ball. Ignore friction and air.'};
 }
+
+/* ---------- picture scenes (original art, no logos) ---------- */
+const K = '#12203F';
+function scBG(dark){ return `<rect width="430" height="240" rx="10" fill="${dark ? '#1B2340' : '#EEF4FC'}"/>`; }
+function scMat(){ return `<rect x="0" y="206" width="430" height="34" fill="#3B6FD4"/><line x1="0" y1="206" x2="430" y2="206" stroke="${K}" stroke-width="3"/>`; }
+function scLine(x1, y1, x2, y2, c, w, extra){ return `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${c || K}" stroke-width="${w || 3}" stroke-linecap="round" ${extra || ''}/>`; }
+function scText(x, y, t, size, fill){ return `<text x="${x}" y="${y}" text-anchor="middle" font-size="${size}" font-weight="900" fill="${fill || K}" font-family="ui-rounded,system-ui,sans-serif">${t}</text>`; }
+function person(x, y, o){
+  o = o || {};
+  const s = o.s || 1, skin = o.skin || '#F2B88B', tr = o.tr || '#E63946';
+  const hip = [x, y];
+  const neck = [x + (o.neck ? o.neck[0] : 0) * s, y + (o.neck ? o.neck[1] : -34) * s];
+  const j = (from, d, def) => { const v = d || def; return [from[0] + v[0] * s, from[1] + v[1] * s]; };
+  const ends = [[hip, neck], [neck, j(neck, o.la, [-18, 18])], [neck, j(neck, o.ra, [18, 18])], [hip, j(hip, o.ll, [-10, 34])], [hip, j(hip, o.rl, [10, 34])]];
+  const head = [neck[0] + (neck[0] - x) * 0.38, neck[1] + (neck[1] - y) * 0.38];
+  let g = '';
+  ends.forEach(e => { g += scLine(e[0][0].toFixed(1), e[0][1].toFixed(1), e[1][0].toFixed(1), e[1][1].toFixed(1), K, 9 * s); });
+  ends.forEach(e => { g += scLine(e[0][0].toFixed(1), e[0][1].toFixed(1), e[1][0].toFixed(1), e[1][1].toFixed(1), skin, 5 * s); });
+  g += `<circle cx="${head[0].toFixed(1)}" cy="${head[1].toFixed(1)}" r="${10 * s}" fill="${skin}" stroke="${K}" stroke-width="2"/>`;
+  g += `<circle cx="${x}" cy="${y}" r="${7.5 * s}" fill="${tr}" stroke="${K}" stroke-width="2"/>`;
+  return g;
+}
+function lying(x, y, dir, o){
+  o = Object.assign({neck:[-34 * dir, 0], la:[-6 * dir, 18], ra:[-4 * dir, -18], ll:[30 * dir, 8], rl:[32 * dir, -8]}, o || {});
+  return person(x, y, o);
+}
+function ringRopes(x0, x1, ys, c){ return ys.map(y => scLine(x0, y, x1, y, c || '#D1384A', 4)).join(''); }
+function wrap(inner, alt, cap){ return {svg:`<svg viewBox="0 0 430 240" role="img" aria-label="${alt}">${inner}</svg>`, cap}; }
+function arrowRight(x1, x2, y){ return scLine(x1, y, x2, y, K, 4) + `<polygon points="${x2 + 10},${y} ${x2 - 4},${y - 8} ${x2 - 4},${y + 8}" fill="${K}"/>`; }
+
+function scClimb(){
+  let g = scBG() + scMat() + ringRopes(14, 416, [120, 150, 180]);
+  g += `<rect x="8" y="100" width="10" height="106" fill="#8A93A6" stroke="${K}" stroke-width="2"/><rect x="412" y="100" width="10" height="106" fill="#8A93A6" stroke="${K}" stroke-width="2"/>`;
+  const xl = y => 150 + (206 - y) * (40 / 162);
+  g += scLine(150, 206, 190, 44, '#8A93A6', 6) + scLine(200, 206, 240, 44, '#8A93A6', 6);
+  [70, 100, 130, 160, 190].forEach(y => { g += scLine(xl(y).toFixed(1), y, (xl(y) + 50).toFixed(1), y, '#8A93A6', 5); });
+  g += scLine(215, 0, 215, 30, K, 2) + `<rect x="190" y="28" width="50" height="20" rx="4" fill="#F4B400" stroke="${K}" stroke-width="2"/><circle cx="215" cy="38" r="6" fill="#D1384A" stroke="${K}" stroke-width="2"/>`;
+  g += person(214, 114, {neck:[4, -32], la:[-18, -40], ra:[16, -44], ll:[-14, 34], rl:[10, 30]});
+  return wrap(g, 'A wrestler climbing a tall ladder in a wrestling ring, reaching up for a gold belt that hangs from above.', 'A wrestler climbs a ladder toward a belt hanging high above the ring.');
+}
+function scLeap(){
+  let g = scBG() + scMat();
+  const xl = y => 50 + (206 - y) * (32 / 140);
+  g += scLine(50, 206, 82, 66, '#8A93A6', 6) + scLine(98, 206, 130, 66, '#8A93A6', 6);
+  [90, 120, 150, 180].forEach(y => { g += scLine(xl(y).toFixed(1), y, (xl(y) + 48).toFixed(1), y, '#8A93A6', 5); });
+  g += `<path d="M122 58 Q215 -8 322 186" fill="none" stroke="${K}" stroke-width="3" stroke-dasharray="7 6" opacity=".6"/>`;
+  g += person(236, 104, {neck:[0, -32], la:[-26, -10], ra:[26, -10], ll:[-16, 32], rl:[16, 32]});
+  g += lying(345, 196, 1, {s:.9, tr:'#2A9D8F'});
+  return wrap(g, 'A wrestler in the air halfway down from the top of a tall ladder, following a dashed curved path toward another wrestler lying on the mat.', 'A wrestler jumps from the top of the ladder. The dashed line shows his path.');
+}
+function scSlam(){
+  let g = scBG() + scMat() + lying(250, 194, 1);
+  for (const d of [-150, -120, -90, -60, -30]){
+    const a = d * Math.PI / 180;
+    g += scLine((250 + 24 * Math.cos(a)).toFixed(1), (196 + 24 * Math.sin(a)).toFixed(1), (250 + 46 * Math.cos(a)).toFixed(1), (196 + 46 * Math.sin(a)).toFixed(1), K, 3);
+  }
+  for (const r of [66, 88, 110]){
+    const a1 = -140 * Math.PI / 180, a2 = -40 * Math.PI / 180;
+    g += `<path d="M${(250 + r * Math.cos(a1)).toFixed(1)} ${(180 + r * Math.sin(a1)).toFixed(1)} A${r} ${r} 0 0 1 ${(250 + r * Math.cos(a2)).toFixed(1)} ${(180 + r * Math.sin(a2)).toFixed(1)}" fill="none" stroke="${K}" stroke-width="3" opacity=".55"/>`;
+  }
+  g += scText(250, 44, 'THUD!', 30, '#C0392B');
+  return wrap(g, 'A wrestler lying flat on the mat just after landing. Short lines burst out from the impact point, curved sound waves spread upward, and the word THUD is above.', 'A wrestler lands flat on the mat.');
+}
+function scSlide(){
+  let g = scBG() + scMat() + lying(220, 196, 1, {s:1});
+  [172, 184, 196].forEach((y, i) => { g += scLine(60 + i * 8, y, 118 + i * 8, y, K, 3, 'opacity=".5"'); });
+  g += arrowRight(300, 380, 150);
+  return wrap(g, 'A wrestler lying on the mat, sliding feet-first to the right. Speed lines trail behind his head and an arrow points to the right.', 'A wrestler slides across the mat. The arrow shows which way he is moving.');
+}
+function scRopes(){
+  let g = scBG() + scMat();
+  g += `<rect x="345" y="84" width="14" height="122" fill="#8A93A6" stroke="${K}" stroke-width="2"/>`;
+  [100, 130, 160].forEach(y => { g += scLine(345, y, 292, y + 16, '#D1384A', 5); });
+  [112, 132, 152].forEach((y, i) => { g += scLine(60 + i * 6, y, 120 + i * 6, y, K, 3, 'opacity=".5"'); });
+  g += person(210, 150, {neck:[16, -30], la:[-16, 16], ra:[22, 6], ll:[-28, 26], rl:[22, 32]});
+  g += arrowRight(150, 215, 40);
+  return wrap(g, 'A wrestler running to the right toward a corner post with three red ropes. Speed lines trail behind him and an arrow points toward the ropes.', 'A wrestler runs toward the ropes. The arrow shows his direction.');
+}
+function scArena(){
+  let g = scBG(true) + scMat() + ringRopes(120, 416, [140, 162, 184]);
+  g += scLine(120, 10, 340, 10, '#9AA5BD', 5);
+  [160, 240, 320].forEach(x => {
+    g += `<polygon points="${x - 8},30 ${x + 8},30 ${x + 40},200 ${x - 40},200" fill="#FFE066" opacity=".28"/><rect x="${x - 14}" y="14" width="28" height="16" rx="3" fill="#9AA5BD" stroke="${K}" stroke-width="2"/>`;
+  });
+  g += person(215, 176, {s:.75}) + person(268, 176, {s:.75, tr:'#2A9D8F'});
+  g += `<rect x="18" y="104" width="62" height="92" rx="6" fill="#2B3354" stroke="#9AA5BD" stroke-width="3"/><circle cx="49" cy="134" r="13" fill="none" stroke="#9AA5BD" stroke-width="3"/><circle cx="49" cy="172" r="18" fill="none" stroke="#9AA5BD" stroke-width="3"/>`;
+  [18, 30, 42].forEach(r => { g += `<path d="M92 ${150 - r} A${r} ${r} 0 0 1 92 ${150 + r}" fill="none" stroke="#E8EEFF" stroke-width="3" opacity=".8"/>`; });
+  g += `<rect x="382" y="96" width="34" height="46" rx="4" fill="#FFD43B" stroke="${K}" stroke-width="2"/><polygon points="402,102 390,124 398,124 394,138 410,115 402,115" fill="${K}"/>`;
+  g += `<path d="M399 142 L399 226 L49 226 L49 196" fill="none" stroke="#9AA5BD" stroke-width="3"/><path d="M399 96 L399 10 L340 10" fill="none" stroke="#9AA5BD" stroke-width="3"/>`;
+  return wrap(g, 'A wrestling arena at night. Three spotlights shine beams down on the ring where two wrestlers stand. A speaker on the left has sound waves coming out. A yellow power box on the right has cables running to the speaker and the lights.', 'An arena with spotlights, a speaker, a power box, and cables.');
+}
+function scBike(){
+  let g = scBG() + `<polygon points="0,205 410,68 430,61 430,240 0,240" fill="#7CB342" stroke="${K}" stroke-width="3"/>`;
+  const R = [194, 121], F = [254, 101], S = [204, 92], H = [246, 82], B = [222, 116];
+  g += `<circle cx="${R[0]}" cy="${R[1]}" r="18" fill="none" stroke="${K}" stroke-width="4"/><circle cx="${F[0]}" cy="${F[1]}" r="18" fill="none" stroke="${K}" stroke-width="4"/>`;
+  [[R, S], [S, B], [R, B], [B, H], [H, F], [S, H]].forEach(p => { g += scLine(p[0][0], p[0][1], p[1][0], p[1][1], '#D1384A', 4); });
+  g += person(206, 86, {tr:'#2D6BE0', neck:[14, -30], la:[26, 22], ra:[26, 22], ll:[14, 30], rl:[18, 30]});
+  g += scText(80, 60, 'Hill', 22);
+  return wrap(g, 'A cyclist riding a bicycle up a grassy hill that slopes upward to the right.', 'A cyclist pedals up a hill.');
+}
+function scTramp(){
+  let g = scBG() + `<rect x="0" y="206" width="430" height="34" fill="#7CB342"/><line x1="0" y1="206" x2="430" y2="206" stroke="${K}" stroke-width="3"/>`;
+  g += scLine(215, 14, 215, 226, K, 2, 'stroke-dasharray="6 6" opacity=".4"');
+  g += scLine(52, 170, 52, 206, '#8A93A6', 5) + scLine(168, 170, 168, 206, '#8A93A6', 5) + scLine(40, 170, 180, 170, K, 5);
+  g += person(110, 58, {neck:[0, -32], la:[-22, -22], ra:[22, -22], ll:[-12, 34], rl:[12, 34]});
+  g += scText(110, 234, 'A', 26);
+  g += scLine(262, 168, 262, 206, '#8A93A6', 5) + scLine(378, 168, 378, 206, '#8A93A6', 5) + `<path d="M250 168 Q320 218 390 168" fill="none" stroke="${K}" stroke-width="5"/>`;
+  g += person(320, 170, {neck:[0, -28], la:[-22, 10], ra:[22, 10], ll:[-18, 18], rl:[18, 18]});
+  g += scText(320, 234, 'B', 26);
+  return wrap(g, 'Two pictures side by side. Picture A: a girl high in the air above a flat trampoline at the top of a jump. Picture B: the same girl crouched at the bottom with the trampoline bed stretched downward.', 'Picture A is the top of the jump. Picture B is the bottom of the jump.');
+}
+const SCENES = {sc_climb:scClimb, sc_leap:scLeap, sc_slam:scSlam, sc_slide:scSlide, sc_ropes:scRopes, sc_arena:scArena, sc_bike:scBike, sc_tramp:scTramp};
+
 function figHTML(q){
-  const f = q.f === 'pend' ? figPend() : q.f === 'bounce' ? figBounce() : q.f === 'bars' ? figBars(true, false) : q.f === 'barsNum' ? figBars(false, true) : null;
+  const f = q.f === 'pend' ? figPend() : q.f === 'bounce' ? figBounce() : q.f === 'bars' ? figBars(true, false) : q.f === 'barsNum' ? figBars(false, true) : (SCENES[q.f] ? SCENES[q.f]() : null);
   return f ? `<figure class="fig" style="margin-left:0;margin-right:0">${f.svg}<p class="cap">${f.cap}</p></figure>` : '';
 }
 
@@ -709,7 +1072,7 @@ function homeHTML(){
   const n = charged(), w = weakest();
   const cells = SKILLS.map(s => { const m = state.mastery[s.id]; return `<i class="cell ${m >= MASTERED ? 'on' : (m >= 25 ? 'part' : '')}" style="--c:${s.color}"></i>`; }).join('');
   const primary = !state.diag
-    ? `<button class="btn primary big" data-act="start-diag"><span class="t">Start the quick check</span><span class="d">8 questions, about 3 minutes. It finds what to practice first.</span></button>`
+    ? `<button class="btn primary big" data-act="start-diag"><span class="t">Start the quick check</span><span class="d">${DIAG.length} questions, about 3 minutes. It finds what to practice first.</span></button>`
     : `<button class="btn primary big" data-act="practice"><span class="t">Keep practicing</span><span class="d">Next up: ${esc(w.name)}</span></button>`;
   const second = !state.diag
     ? `<button class="btn big" data-act="practice"><span class="t">Skip to practice</span><span class="d">Jump right in. The site adjusts as you go.</span></button>` : '';
@@ -726,10 +1089,15 @@ function homeHTML(){
   <div class="stack mt">
     ${primary}${second}
     <button class="btn big" data-act="sprint"><span class="t">5-minute sprint</span><span class="d">Race the clock. Streaks earn bonus points.</span></button>
+    <button class="btn big" data-act="challenge"><span class="t">Challenge round</span><span class="d">Harder questions, clearly labeled. Challenge stars: ${stars()} of ${CHALLENGE_TOTAL}.</span></button>
     <button class="btn big" data-act="progress"><span class="t">My skills</span><span class="d">See what is charged and what needs practice.</span></button>
     <button class="btn big" data-act="save"><span class="t">Save or load my progress</span><span class="d">Get a code so you can pick up where you left off.</span></button>
   </div>
   <p class="foot">Practice only. Nothing here is graded, and nothing is saved unless you copy your code.</p>`;
+}
+
+function challengeBanner(q){
+  return `<div class="challenge" role="note"><span class="tagc">CHALLENGE</span><span class="lvlc">${q.c === 2 ? 'Very hard.' : 'Hard.'} This one is tougher than normal. It is okay to miss it, and it will not hurt your skill meters.</span></div>`;
 }
 
 function quizHTML(){
@@ -737,6 +1105,7 @@ function quizHTML(){
   let mid;
   if (mode === 'diag') mid = `Quick check: question ${diagI + 1} of ${DIAG.length}`;
   else if (mode === 'sprint') mid = `<span id="timer" class="timer">${fmt(Math.max(0, sprint.endAt - Date.now()))}</span><span class="pts">Score ${sprint.score}</span>${sprint.streak >= 2 ? `<span class="streak">Streak ${sprint.streak}</span>` : ''}`;
+  else if (mode === 'challenge') mid = `Challenge round: ${stars()} of ${CHALLENGE_TOTAL} stars`;
   else mid = focus ? `Practice: ${esc(SKILL[focus].name)}` : 'Practice';
   const chip = `<span class="chip" style="--c:${s.color}"><span class="dot"></span>${esc(s.name)}${mode === 'diag' ? '' : meter(q.s)}</span>`;
 
@@ -755,13 +1124,14 @@ function quizHTML(){
   let actions = '';
   if (!cur.done){
     if (multi) actions += `<button class="btn primary" data-act="check" ${cur.sel.length ? '' : 'disabled'}>Check my answer</button>`;
-    if (mode === 'practice' && !cur.hint) actions += `<button class="btn" data-act="hint">Show a hint</button>`;
+    if ((mode === 'practice' || mode === 'challenge') && !cur.hint) actions += `<button class="btn" data-act="hint">Show a hint</button>`;
   }
   const hint = (cur.hint && !cur.done) ? `<div class="hint"><strong>Hint:</strong> ${esc(q.h)}</div>` : '';
   const last = mode === 'diag' && diagI === DIAG.length - 1;
 
   return `
   <div class="bar"><button class="btn small ghost" data-act="home">Home</button><div class="barmid">${mid}</div></div>
+  ${q.c ? challengeBanner(q) : ''}
   ${chip}
   <h2 class="qtext">${esc(q.q)}</h2>
   ${figHTML(q)}
@@ -780,6 +1150,7 @@ function fbHTML(){
   let extra = '';
   if (mode === 'sprint' && r.correct) extra += `<p><strong>+${r.pts} points</strong></p>`;
   if (mode === 'practice' && !r.correct) extra += `<p>This one will come back later so you can try it again.</p>`;
+  if (mode === 'challenge') extra += r.correct ? (r.newStar ? '<p><strong>Challenge star earned!</strong></p>' : '') : '<p>That was a CHALLENGE question, so your skill meters did not change. It will come back later.</p>';
   if (r.mastered) extra += `<p><strong>Skill charged!</strong> You mastered ${esc(SKILL[q.s].name)}.</p>`;
   return `<div class="fb ${r.correct ? 'good' : 'bad'}" id="fb" role="status">
     <h3>${head}</h3>
@@ -809,8 +1180,8 @@ function diagDoneHTML(){
 
 function progressHTML(){
   const cards = SKILLS.map(s => {
-    const total = BANK.filter(q => q.s === s.id).length;
-    const tried = BANK.filter(q => q.s === s.id && state.status[q.i] !== 0).length;
+    const total = BANK.filter(q => !q.c && q.s === s.id).length;
+    const tried = BANK.filter(q => !q.c && q.s === s.id && state.status[q.i] !== 0).length;
     return `<div class="card skill">
       <div class="top"><h3><span class="dot" style="--c:${s.color}"></span>${esc(s.name)}</h3><span class="lvl">${levelLabel(s.id)} ${meter(s.id)}</span></div>
       <p class="meta">${esc(s.blurb)}. ${tried} of ${total} questions tried.</p>
@@ -821,6 +1192,7 @@ function progressHTML(){
   <div class="bar"><button class="btn small ghost" data-act="home">Home</button></div>
   <h2>My skills</h2>
   <p class="sub">A skill is charged when all three cells are filled. Right answers fill cells. Misses bring practice back sooner.</p>
+  <p class="sub">Challenge stars: <strong>${stars()} of ${CHALLENGE_TOTAL}</strong></p>
   <div class="stack mt">${cards}</div>
   <div class="stack mt">
     <button class="btn primary big" data-act="practice"><span class="t">Practice what I need most</span></button>
@@ -891,7 +1263,7 @@ function nextQ(){
     if (diagI >= DIAG.length){ state.diag = true; screen = 'diagdone'; render(); }
     else loadQ(DIAG[diagI]);
   } else {
-    loadQ(pickQuestion(mode === 'practice' ? focus : null));
+    loadQ(mode === 'challenge' ? pickChallenge() : pickQuestion(mode === 'practice' ? focus : null));
   }
 }
 function submit(){
@@ -900,6 +1272,7 @@ function submit(){
   const correct = grade(q, cur.sel);
   const res = {correct};
   if (mode === 'diag'){ applyDiag(q, correct); diagRes.push({sid:q.s, correct}); }
+  else if (mode === 'challenge') Object.assign(res, applyChallenge(q, correct));
   else {
     Object.assign(res, applyAnswer(q, correct, cur.hint));
     if (mode === 'sprint'){
@@ -950,12 +1323,13 @@ document.addEventListener('click', e => {
   const el = e.target.closest('[data-act]');
   if (!el || el.disabled) return;
   const act = el.dataset.act;
-  if (['home', 'progress', 'save', 'start-diag', 'practice', 'sprint'].includes(act)) confirmReset = false;
+  if (['home', 'progress', 'save', 'start-diag', 'practice', 'sprint', 'challenge'].includes(act)) confirmReset = false;
   switch (act){
     case 'home': stopSprint(); msg = ''; screen = 'home'; render(); break;
     case 'start-diag': msg = ''; startDiag(); break;
     case 'practice': msg = ''; stopSprint(); mode = 'practice'; focus = el.dataset.skill || null; loadQ(pickQuestion(focus)); break;
     case 'sprint': msg = ''; startSprint(); break;
+    case 'challenge': msg = ''; stopSprint(); mode = 'challenge'; focus = null; loadQ(pickChallenge()); break;
     case 'progress': stopSprint(); msg = ''; screen = 'progress'; render(); break;
     case 'save': stopSprint(); screen = 'save'; render(); break;
     case 'opt': {
